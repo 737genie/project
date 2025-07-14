@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>User's Profile</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        /* 기본 설정: 모든 요소에 box-sizing을 border-box로, 기본 마진/패딩 제거 */
+        * {
+            box-sizing: border-box;
+            font-family: Arial, Helvetica, sans-serif;
+            margin: 0;
+            padding: 0;
+            letter-spacing: 0.5px;
+        }
+
+        /* html과 body의 높이를 뷰포트 전체로 설정하여 스크롤 없이 꽉 차게 만듭니다. */
+        html,
+        body {
+            height: 100%;
+        }
+
+        /* body를 flex 컨테이너로 설정하고, 자식 요소들을 세로(column) 방향으로 정렬합니다. */
+        body {
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* --- Navigation Bar Styles (내비게이션 바 스타일) --- */
+        .topnav {
+            background-color: #2B2730;
+            flex-shrink: 0;
+            /* 높이가 줄어들지 않도록 고정 */
+            display: flex;
+            /* .topnav 자체를 flex 컨테이너로 만듭니다. */
+            justify-content: space-between;
+            /* 양 끝 정렬 */
+            align-items: center;
+            /* 수직 중앙 정렬 */
+            padding: 0 10px;
+            /* 좌우 패딩 */
+        }
+
+        /* Link 1 (첫 번째 div) 스타일 */
+        .topnav>div:first-child {
+            display: flex;
+            align-items: center;
+        }
+
+        /* Link 2, 3 그룹 (두 번째 div) 스타일 */
+        .topnav>div:last-child {
+            display: flex;
+            align-items: center;
+        }
+
+        /* 모든 topnav 링크에 공통 적용되는 스타일 */
+        .topnav a {
+            color: #E966A0;
+            text-align: center;
+            padding: 14px 16px;
+            text-decoration: none;
+            transition: background-color 0.3s, color 0.3s, font-size 0.3s;
+        }
+
+        /* Link 1 (첫 번째 링크) 스타일: 크기 키우기 */
+        .topnav>div:first-child a {
+            font-size: 24px;
+            font-weight: bold;
+            padding: 20px 25px;
+        }
+
+        /* 호버 시 색상 변경 */
+        .topnav a:hover {
+            background-color: #feffa9;
+            color: #9575DE;
+        }
+
+        /* --- Main Content Wrapper (주요 콘텐츠 래퍼) --- */
+        /* 내비게이션 바와 푸터 사이의 남은 공간을 모두 차지 */
+        .main-content-wrapper {
+            flex-grow: 1;
+            /* 남은 수직 공간을 모두 차지 */
+            background-color: #2B2730;
+            /* 배경색 */
+            display: flex;
+            /* 내부 아이템 (profile-box)을 정렬하기 위해 flex 사용 */
+            justify-content: center;
+            /* 가로 중앙 정렬 */
+            align-items: center;
+            /* 세로 중앙 정렬 */
+            padding: 20px;
+            /* 내부 여백 */
+            overflow: auto;
+            /* 내용이 넘칠 경우 스크롤 */
+        }
+
+        /* --- Profile Box Styles (프로필 박스 스타일) --- */
+        .profile-box {
+            background-color: #6554AF;
+            border-radius: 20px;
+            padding: 30px 40px;
+            /* 내부 패딩 */
+            color: #feffa9;
+            width: 100%;
+            /* 기본 너비는 100% */
+            max-width: 500px;
+            /* 최대 너비 제한 (너무 넓어지지 않도록) */
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            /* 그림자 효과 */
+        }
+
+        .profile-title {
+            color: #E966A0;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2em;
+            font-weight: bold;
+        }
+
+        .profile-item {
+            display: flex;
+            align-items: center;
+            /* 세로 중앙 정렬 */
+            margin-bottom: 15px;
+            /* 각 항목 간 간격 */
+            font-size: 1.1em;
+        }
+
+        .profile-label {
+            flex-shrink: 0;
+            /* 라벨 크기 고정 */
+            text-align: right;
+            /* 라벨 텍스트 오른쪽 정렬 */
+            width: 140px;
+            /* <-- 이 너비를 조절하여 라벨 끝을 일렬로 맞춥니다. */
+            margin-right: 20px;
+            /* 라벨과 값 사이 간격 */
+            font-weight: bold;
+            color: #E966A0;
+        }
+
+        .profile-value {
+            flex-grow: 1;
+            /* 남은 공간을 모두 차지 */
+            text-align: left;
+            /* 값 텍스트 왼쪽 정렬 */
+            padding: 8px 0;
+            /* 값 부분의 상하 패딩 */
+            color: #feffa9;
+            /* 값 텍스트 색상 */
+        }
+
+        /* 이미지 라인 특별 스타일 */
+        .profile-image-container { /* 이름을 더 명확하게 변경 */
+            display: flex;
+            flex-direction: column;
+            /* 이미지 라벨과 이미지를 세로로 정렬 */
+            align-items: center;
+            /* 이미지 라인 전체를 가로 중앙 정렬 */
+            margin-bottom: 25px;
+        }
+
+        .profile-image-container .profile-label {
+            width: auto;
+            /* 이미지 라벨은 너비 고정 대신 자동으로 */
+            margin-right: 0;
+            /* 라벨과 이미지 사이 간격 제거 */
+            margin-bottom: 10px;
+            /* 라벨과 이미지 사이 세로 간격 */
+            text-align: center;
+            /* 라벨 텍스트 중앙 정렬 */
+        }
+
+        /* --- 실제 이미지를 위한 스타일 --- */
+        .profile-image { /* 새로 추가될 img 태그에 적용될 스타일 */
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid #E966A0; /* 테마 색상 테두리 */
+            display: block; /* 가끔 인라인 요소가 예상치 못한 여백을 만들 때가 있어 블록으로 */
+        }
+
+
+        /* --- Footer Styles (푸터 스타일) --- */
+        .footer {
+            background-color: #2B2730;
+            padding: 10px;
+            flex-shrink: 0;
+            /* 높이가 줄어들지 않도록 고정 */
+            text-align: center;
+        }
+
+        /* auth.js에서 동적으로 추가되는 navbar-text 스타일 */
+        .navbar-text {
+            color: #E966A0;
+            margin-right: 16px;
+            font-size: 16px;
+        }
+
+        /* navbar-text 안에 있는 특정 링크 스타일 재정의 (사용자 이름) */
+        .navbar-text a {
+            color: #feffa9;
+            /* 사용자 이름 밑줄 유지 */
+            cursor: default;
+            padding: 0;
+            transition: none;
+        }
+
+        .navbar-text a:hover {
+            background-color: transparent;
+            color: #feffa9;
+        }
+
+        .edit {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px; /* 수정 버튼 위 여백 */
+        }
+
+        .edit a {
+            width: 20%;
+            text-decoration: none;
+            font-size: 1.1em;
+            display: flex;
+            justify-content: center;
+            background-color: #2B2730;
+            color: #E966A0;
+            ;
+            text-align: center;
+            padding: 14px 16px;
+            border-radius: 8px; /* 버튼 모서리 둥글게 */
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        .edit a:hover {
+            color: #9575DE;
+            background-color: #feffa9;
+        }
+
+        /* --- Responsive Layout (모바일) --- */
+        @media (max-width: 768px) {
+            .topnav {
+                flex-direction: column;
+                padding: 10px 0;
+            }
+
+            .topnav>div {
+                flex-direction: column;
+                width: 100%;
+                align-items: stretch;
+            }
+
+            /* 모바일에서는 동적 링크/버튼도 topnav a 스타일을 따르도록 */
+            .topnav a,
+            .topnav .navbar-text,
+            .topnav .logout-button-link {
+                padding: 10px;
+                width: 100%;
+            }
+
+            .topnav>div:first-child a {
+                font-size: 20px;
+                padding: 15px;
+            }
+
+            .topnav>div:last-child {
+                margin-top: 10px;
+            }
+
+            /* --- Main Content Wrapper (Mobile) --- */
+            .main-content-wrapper {
+                padding: 10px;
+                /* 모바일에서 패딩 조정 */
+            }
+
+            .profile-box {
+                padding: 20px 25px;
+                /* 모바일에서 프로필 박스 패딩 조정 */
+            }
+
+            .profile-title {
+                font-size: 1.8em;
+                margin-bottom: 20px;
+            }
+
+            .profile-item {
+                flex-direction: column;
+                /* 모바일에서는 라벨과 값을 세로로 쌓음 */
+                align-items: flex-start;
+                /* 왼쪽 정렬 */
+                margin-bottom: 10px;
+            }
+
+            .profile-label {
+                width: auto;
+                /* 모바일에서는 너비 고정 제거 */
+                text-align: left;
+                /* 라벨 텍스트 왼쪽 정렬 */
+                margin-right: 0;
+                margin-bottom: 5px;
+                /* 라벨과 값 사이 세로 간격 */
+            }
+
+            .profile-value {
+                width: 100%;
+                /* 값은 전체 너비 사용 */
+                text-align: left;
+            }
+
+            .profile-image-container {
+                flex-direction: column;
+                align-items: center;
+                margin-bottom: 20px;
+            }
+
+            .profile-image-container .profile-label {
+                text-align: center;
+                width: auto;
+                margin-bottom: 10px;
+            }
+
+            .edit a {
+                width: 50%; /* 모바일에서 버튼 너비 더 넓게 */
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="topnav">
+        <div>
+            <a href="index.html">Genie's WebPage</a>
+        </div>
+        <div id="auth-links">
+            <a href="login.html">Log In</a>
+            <a href="signup.html">Sign Up</a>
+        </div>
+    </div>
+
+    <div class="main-content-wrapper">
+        <div class="profile-box" id="user-profile-box">
+            <p style="text-align: center; color: #feffa9;">L O A D I N G . . .</p>
+        </div>
+    </div>
+
+    <div class="footer">
+    </div>
+
+    <script src="/js/auth.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            renderNavbar(); // 네비게이션 바 초기 렌더링 (로그인 상태에 따라 달라짐)
+
+            const profileBox = document.getElementById('user-profile-box');
+
+            // URL에서 user_id 추출
+            // 예: /profile/123 -> user_id = 123
+            // 또는 /api/auth/me 로 접근하여 현재 로그인된 사용자 정보 가져오기 (권장)
+            
+            let user_id_from_url = null;
+            const pathSegments = window.location.pathname.split('/');
+            // /profile/123 또는 /api/users/123 같은 URL에서 ID를 추출
+            // /profile/me 같은 경우를 처리하려면 별도의 로직 필요
+            if (pathSegments.length > 2) {
+                const lastSegment = pathSegments[pathSegments.length - 1];
+                if (!isNaN(lastSegment) && lastSegment !== "") { // 숫자인지 확인
+                    user_id_from_url = parseInt(lastSegment);
+                } else if (lastSegment === "me" && pathSegments[pathSegments.length - 2] === "profile") {
+                     // /profile/me 경로라면 getCurrentUser를 통해 본인 프로필을 가져오도록 처리
+                     // 이 경우 user_id_from_url을 null로 유지하여 아래 if문에서 getCurrentUser()를 호출하도록 유도
+                }
+            }
+
+            let user = null;
+            if (user_id_from_url) {
+                // 특정 user_id의 프로필을 가져옴
+                try {
+                    const response = await fetch(`/api/users/${user_id_from_url}`);
+                    if (response.ok) {
+                        user = await response.json();
+                    } else {
+                        const errorData = await response.json();
+                        profileBox.innerHTML = `<p style="color: red; text-align: center;">오류: ${errorData.detail || '프로필을 불러오지 못했습니다.'}</p>`;
+                        console.error('Failed to fetch user profile:', errorData);
+                    }
+                } catch (error) {
+                    profileBox.innerHTML = `<p style="color: red; text-align: center;">네트워크 오류: ${error.message}</p>`;
+                    console.error('Network error fetching user profile:', error);
+                }
+            } else {
+                // user_id가 없거나 'me'인 경우, 현재 로그인된 사용자 프로필을 가져옴
+                // 이 함수는 auth.js에 정의되어 있을 것으로 예상
+                user = await getCurrentUser(); 
+                if (!user) {
+                    profileBox.innerHTML = `
+                        <h2 class="profile-title">로그인 필요</h2>
+                        <p style="text-align: center; color: #feffa9;">이 페이지를 보려면 로그인이 필요합니다.</p>
+                        <div class="edit" style="margin-top: 30px;">
+                            <a href="login.html" style="width: auto; padding: 10px 25px;">Log in</a>
+                        </div>
+                    `;
+                    return; // 로그인하지 않은 경우 여기서 함수 종료
+                }
+            }
+
+            if (user) {
+                // 사용자 정보가 성공적으로 로드된 경우
+                profileBox.innerHTML = `
+                    <h2 class="profile-title">${user.username || user.full_name || '사용자'}'s Profile</h2>
+                    <div class="profile-item profile-image-container">
+                        ${user.profile_image_filename ? 
+                            `<img src="/static/profiles/${user.profile_image_filename}" alt="프로필 이미지" class="profile-image">` : 
+                            `<div class="profile-image profile-image-placeholder" style="background-color: rgba(255, 255, 255, 0.15); display: flex; justify-content: center; align-items: center; color: rgba(255, 255, 255, 0.6); font-size: 0.9em;">No Image</div>`
+                        }
+                    </div>
+                    <div class="profile-item">
+                        <div class="profile-label">NAME:</div>
+                        <div class="profile-value">${user.username || user.full_name || '정보 없음'}</div>
+                    </div>
+                    <div class="profile-item">
+                        <div class="profile-label">BIO:</div>
+                        <div class="profile-value">${user.bio || ''}</div>
+                    </div>
+                    <div class="profile-item">
+                        <div class="profile-label">E-MAIL:</div>
+                        <div class="profile-value">${user.email || '정보 없음'}</div>
+                    </div>
+                    <div class="edit">
+                        <a href="edit_profile.html">Edit</a>
+                    </div>
+                `;
+                 // 로그인된 사용자와 현재 보고 있는 프로필이 동일인물일 때만 수정 버튼을 활성화
+                const currentUser = await getCurrentUser();
+                if (currentUser && currentUser.id === user.id) {
+                    // edit_profile.html이 실제 수정 페이지라고 가정
+                    // user.id를 쿼리 파라미터로 넘겨줄 필요는 없지만, 일관성을 위해 추가 가능
+                    profileBox.querySelector('.edit a').href = `edit_profile.html?user_id=${user.id}`;
+                } else {
+                    // 다른 사람의 프로필을 볼 때는 수정 버튼을 숨기거나 비활성화
+                    const editButton = profileBox.querySelector('.edit');
+                    if (editButton) editButton.style.display = 'none';
+                }
+
+            } else {
+                // 사용자 정보를 불러오지 못한 최종 경우
+                profileBox.innerHTML = `<p style="color: red; text-align: center;">사용자 프로필을 찾을 수 없습니다.</p>`;
+            }
+        });
+    </script>
+
+</body>
+
+</html>

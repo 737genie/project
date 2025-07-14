@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>sign up</title>
+    <style>
+        body {
+            letter-spacing: 0.8px;
+            background-color: #2B2730;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+
+        .box {
+            width: 300px;
+            height: auto;
+            padding: 50px;
+            background-color: #9575DE;
+
+            border-radius: 30px;
+            transform: translateY(-50px);
+        }
+
+        h1 {
+            color: #2B2730;
+        }
+
+        input {
+            width: 100%;
+            height: 30px;
+            display: flex;
+            margin-top: 10px;
+            letter-spacing: 0.8px;
+
+        }
+
+        .profile input {
+            width: 100%;
+            height: 30px;
+        }
+
+        button {
+            margin-top: 30px;
+            width: 30%;
+            height: 30px;
+            background-color: #feffa9;
+            color: #2B2730;
+            border: none;
+            border-radius: 30px;
+            letter-spacing: 0.8px;
+
+        }
+
+        button:hover {
+            background-color: #2B2730;
+            color: #E966A0;
+        }
+
+        textarea {
+            width: 100%;
+            height: 50px;
+            margin-top: 20px;
+
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 40px;
+        }
+
+        .footer a {
+            font-size: 10px;
+            color: #2B2730;
+            text-decoration: none;
+        }
+
+        .profile {
+            margin-top: 20px;
+        }
+        .profile p {
+            color: #2B2730;
+            font-weight: bold;
+        }
+        
+    </style>
+</head>
+
+<body>
+    <div class="box">
+        <h1>Sign up</h1>
+        <form method="post" id="signupForm">
+            <div>
+                <div id="error-message" style="color: #FFEB3B; margin-top: 10px; display: none;"></div>
+                <input type="text" name="username" id="username" placeholder="user name">
+                <input type="email" name="email" id="email" placeholder="email">
+                <input type="password" name="pwd" id="pwd" placeholder="password">
+                <input type="password" name="pwd2" id="check_pwd" placeholder="check password">
+                <textarea placeholder="bio(non-essential)" name="bio" id="bio"></textarea>
+                <div class="profile">
+                    <p>profile image(non-essential)</p>
+                    <div class="profile-box">
+                        <input type="file" id="profilePic" name="profilePic" accept="image/*">
+                    </div>
+                </div>
+            </div>
+            <div class="sign">
+                <button type="submit" id="signupButton">sign up</button>
+            </div>
+            <div class="footer">
+                <a href="index.html">Genie's WebPage</a>
+            </div>
+        </form>
+    </div>
+<script>
+    const signupForm = document.getElementById("signupForm");
+    // const home = document.querySelector("home"); // The 'home' tag is not a standard HTML tag, please verify.
+
+    signupForm.addEventListener("submit", async (e) => {
+        e.preventDefault();
+
+        const signupButton = document.getElementById('signupButton');
+        const errorEl = document.getElementById('error-message');
+        const pwd = document.getElementById('pwd');
+        const checkpwd = document.getElementById('check_pwd');
+        const imageInput = document.getElementById('profilePic');
+
+        // 1. Initialize error message and hide it
+        errorEl.innerText = '';
+        errorEl.style.display = 'none';
+
+        // 2. Change button state
+        signupButton.disabled = true;
+        signupButton.innerText = 'Processing...';
+
+        // Check if passwords match
+        if (pwd.value !== checkpwd.value) {
+            errorEl.innerText = 'Passwords do not match.';
+            errorEl.style.display = 'block'; // Show div on error
+            signupButton.disabled = false;
+            signupButton.innerText = 'Sign Up'; // Changed to 'Sign Up' for consistency
+            return; // Exit function if passwords don't match
+        }
+
+        const formData = new FormData(e.target);
+        const textData = {
+            username: formData.get('username'),
+            email: formData.get('email'),
+            password: formData.get('pwd'),
+            bio: formData.get('bio')
+        };
+
+        try {
+            // 3. Request registration and auto-login with text data
+            const registerResponse = await fetch('/api/auth/register', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(textData)
+            });
+
+            if (!registerResponse.ok) {
+                const errorData = await registerResponse.json();
+                throw new Error(errorData.detail || 'Registration failed.');
+            }
+
+            //이미지 업로드 수정 (gemini)
+            // const registeredUserData = await registerResponse.json();
+            // const userId = registeredUserData.id;
+
+            // 4. If a profile picture file exists, proceed with image upload request
+            const imageFile = imageInput.files[0];
+            if (imageFile) {
+                const imageFormData = new FormData();
+                imageFormData.append("file", imageFile); //파일은 무조건 post 방식
+                const imageResponse = await fetch('/api/users/me/upload-image', {
+                    method: 'POST',
+                    body: imageFormData,
+                    // headers: { //이미지 업로드 수정 (gemini)
+                    //     'X-User-ID': userId
+                    // },
+                    credentials: 'include' // Essential to send the auto-logged-in session cookie
+                });
+                if (!imageResponse.ok) {
+                    // Warn if image upload fails, but consider overall registration successful
+                    console.error('Image upload failed, but registration completed.');
+                }
+            }
+
+            alert('Registration completed. Redirecting to the main page.');
+            window.location.href = '/index2.html'; // Redirect on success
+
+        } catch (error) {
+            errorEl.innerText = error.message;
+            errorEl.style.display = 'block'; // Show div on error
+        } finally {
+            // Reset button state regardless of success or failure
+            signupButton.disabled = false;
+            signupButton.innerText = 'Sign Up'; // Changed to 'Sign Up' for consistency
+        }
+    });
+</script>
+</body>
+
+</html>

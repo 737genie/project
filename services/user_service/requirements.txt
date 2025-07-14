@@ -1,0 +1,9 @@
+fastapi
+python-multipart
+uvicorn
+sqlmodel
+sqlalchemy[asyncio]
+asyncmy
+python-dotenv
+redis
+passlib[bcrypt]

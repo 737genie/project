@@ -1,0 +1,706 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>Edit Profile</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+/* 기본 설정: 모든 요소에 box-sizing을 border-box로, 기본 마진/패딩 제거 */
+* {
+    box-sizing: border-box;
+    font-family: Arial, Helvetica, sans-serif;
+    margin: 0;
+    padding: 0;
+    letter-spacing: 0.5px;
+}
+
+/* html과 body의 높이를 뷰포트 전체로 설정하여 스크롤 없이 꽉 차게 만듭니다. */
+html,
+body {
+    height: 100%;
+}
+
+/* body를 flex 컨테이너로 설정하고, 자식 요소들을 세로(column) 방향으로 정렬합니다. */
+body {
+    display: flex;
+    flex-direction: column;
+}
+
+/* --- Navigation Bar Styles (내비게이션 바 스타일) --- */
+.topnav {
+    background-color: #2B2730;
+    flex-shrink: 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 10px;
+}
+
+.topnav > div:first-child {
+    display: flex;
+    align-items: center;
+}
+
+.topnav > div:last-child {
+    display: flex;
+    align-items: center;
+}
+
+.topnav a {
+    color: #E966A0;
+    text-align: center;
+    padding: 14px 16px;
+    text-decoration: none;
+    transition: background-color 0.3s, color 0.3s, font-size 0.3s;
+}
+
+.topnav > div:first-child a {
+    font-size: 24px;
+    font-weight: bold;
+    padding: 20px 25px;
+}
+
+.topnav a:hover {
+    background-color: #feffa9;
+    color: #9575DE;
+}
+
+/* --- Main Content Wrapper (주요 콘텐츠 래퍼) --- */
+.main-content-wrapper {
+    flex-grow: 1;
+    background-color: #2B2730;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+    /* overflow: auto; */
+}
+
+/* --- Profile Box Styles (프로필 박스 스타일) --- */
+.profile-box {
+    background-color: #6554AF;
+    border-radius: 20px;
+    padding: 30px 40px;
+    color: #feffa9;
+    width: 100%;
+    max-width: 500px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    margin: auto;
+}
+
+.profile-title {
+    color: #E966A0;
+    text-align: center;
+    margin-bottom: 30px;
+    font-size: 2em;
+    font-weight: bold;
+}
+
+.profile-item {
+    display: flex;
+    align-items: center;
+    margin-bottom: 15px;
+    font-size: 1.1em;
+}
+
+.profile-label {
+    flex-shrink: 0;
+    text-align: right;
+    width: 140px; /* 라벨 너비 유지 */
+    margin-right: 20px;
+    font-weight: bold;
+    color: #E966A0;
+}
+
+.profile-value {
+    flex-grow: 1;
+    text-align: left;
+    /* padding: 8px 0; */ /* 입력 필드에 직접 패딩 적용 */
+    color: #feffa9;
+}
+
+/* --- Input Field Styles (새로 추가) --- */
+.profile-value input[type="text"],
+.profile-value input[type="email"],
+.profile-value input[type="password"],
+.profile-value textarea {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #9575DE; /* 테두리 색상 */
+    border-radius: 5px;
+    background-color: #2B2730; /* 입력 필드 배경색 */
+    color: #feffa9; /* 입력 텍스트 색상 */
+    font-size: 1em;
+    outline: none; /* 포커스 시 외곽선 제거 */
+    transition: border-color 0.3s;
+}
+
+.profile-value input[type="text"]:focus,
+.profile-value input[type="email"]:focus,
+.profile-value input[type="password"]:focus,
+.profile-value textarea:focus {
+    border-color: #E966A0; /* 포커스 시 테두리 색상 변경 */
+}
+
+/* 이미지 라인 특별 스타일 */
+.profile-image-row {
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 25px;
+}
+
+.profile-image-row .profile-label {
+    width: auto;
+    margin-right: 0;
+    margin-bottom: 10px;
+    text-align: center;
+}
+
+.profile-image-placeholder {
+    display: flex;
+    flex-direction: column; /* 파일 입력과 라벨을 세로로 정렬 */
+    justify-content: center;
+    align-items: center;
+    width: 120px; /* 이미지 자리 너비 증가 */
+    height: 120px; /* 이미지 자리 높이 증가 */
+    background-color: rgba(255, 255, 255, 0.15);
+    border-radius: 50%;
+    color: rgba(255, 255, 255, 0.8); /* 텍스트 색상 좀 더 진하게 */
+    font-size: 0.9em;
+    text-align: center;
+    overflow: hidden; /* 추가: 이미지 컨테이너 넘치는 내용 숨김 */
+    position: relative; /* 자식 요소 포지셔닝을 위해 */
+
+    margin: 0 auto 10px;
+}
+
+/* 파일 입력 필드는 숨기고 label로 클릭 유도 */
+.profile-image-placeholder input[type="file"] {
+    display: none; /* 실제 파일 입력 필드를 숨김 */
+}
+
+#profile-image-preview {
+    width: 100%;
+    height: 100%; /* 부모 컨테이너에 맞춤 */
+    border-radius: 50%;
+    object-fit: cover;
+    position: absolute; /* 절대 위치를 사용하여 겹치게 함 */
+    top: 0;
+    left: 0;
+    z-index: 1; /* 이미지가 라벨 아래에 오도록 z-index 설정 */
+}
+.profile-image-placeholder label {
+    cursor: pointer;
+    background-color: #E966A0; /* 라벨 배경색 */
+    color: white;
+    padding: 8px 15px;
+    border-radius: 5px;
+    margin-top: 0; /* 이미지 자리와 라벨 사이 간격 */
+    transition: background-color 0.3s;
+    font-size: 0.9em;
+    font-weight: normal; /* 라벨 폰트 굵기 초기화 */
+    text-align: center; /* 라벨 텍스트 중앙 정렬 */
+    width: auto; /* width 고정 제거 */
+    margin-right: 0; /* margin-right 제거 */
+
+    position: relative;
+    z-index: 2;
+
+}
+
+.profile-image-placeholder label:hover {
+    background-color: #C75185;
+    color: white;
+}
+
+
+/* --- Form Actions Button Styles (새로 추가) --- */
+.form-actions {
+    display: flex;
+    justify-content: center; /* 버튼을 중앙에 정렬 */
+    gap: 20px; /* 버튼 사이 간격 */
+    margin-top: 30px; /* 프로필 항목과 버튼 사이 간격 */
+}
+
+.form-actions button {
+    padding: 12px 25px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1.1em;
+    font-weight: bold;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+.save-button {
+    background-color: #2B2730; /* 저장 버튼 색상 */
+    color: #E966A0;
+}
+
+.save-button:hover {
+    background-color: #3F3C48;
+}
+
+.cancel-button {
+    background-color: #2B2730; /* 취소 버튼 색상 */
+    color: #feffa9;
+    border: 1px solid #9575DE; /* 테두리 추가 */
+}
+
+.cancel-button:hover {
+    background-color: #3F3C48;
+    color: #feffa9;
+}
+
+
+/* --- Footer Styles (푸터 스타일) --- */
+.footer {
+    background-color: #2B2730;
+    padding: 10px;
+    flex-shrink: 0;
+    text-align: center;
+}
+
+/* auth.js에서 동적으로 추가되는 navbar-text 스타일 */
+.navbar-text {
+    color: #E966A0;
+    margin-right: 16px;
+    font-size: 16px;
+}
+
+/* navbar-text 안에 있는 특정 링크 스타일 재정의 (사용자 이름) */
+.navbar-text a {
+    color: #feffa9;
+    text-decoration: underline;
+    cursor: default;
+    padding: 0;
+    transition: none;
+}
+
+.navbar-text a:hover {
+    background-color: transparent;
+    color: #feffa9;
+}
+.image-upload-label {
+            cursor: pointer;
+            padding: 8px 15px;
+            background-color: #E966A0; /* 예시 색상 */
+            color: #2B2730;
+            border-radius: 5px;
+            font-size: 0.9em;
+            margin-top: 10px; /* 미리보기 이미지와 간격 */
+            display: inline-block; /* 버튼처럼 보이게 */
+        }
+        .image-upload-label:hover {
+            background-color: #feffa9;
+            color: #9575DE;
+        }
+
+        /* 폼 액션 버튼 스타일 */
+        .form-actions {
+            display: flex;
+            justify-content: center;
+            gap: 20px; /* 버튼 간 간격 */
+            margin-top: 30px;
+        }
+
+        .save-button, .cancel-button {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1em;
+            cursor: pointer;
+            transition: background-color 0.3s, color 0.3s;
+            flex-grow: 1; /* 가용 공간 차지 */
+            max-width: 180px; /* 최대 너비 제한 */
+        }
+
+        .save-button {
+            background-color: #E966A0;
+            color: #2B2730;
+        }
+
+        .save-button:hover {
+            background-color: #feffa9;
+            color: #9575DE;
+        }
+
+        .cancel-button {
+            background-color: #2B2730;
+            color: #E966A0;
+            border: 1px solid #E966A0;
+        }
+
+        .cancel-button:hover {
+            background-color: #9575DE;
+            color: #feffa9;
+            border-color: #9575DE;
+        }
+
+        /* 비밀번호 변경 폼과 프로필 폼 구분선 */
+        hr {
+            border-color: rgba(255, 255, 255, 0.2);
+            margin: 30px 0;
+        }
+
+/* --- Responsive Layout (모바일) --- */
+@media (max-width: 768px) {
+    .topnav {
+        flex-direction: column;
+        padding: 10px 0;
+    }
+
+    .topnav > div {
+        flex-direction: column;
+        width: 100%;
+        align-items: stretch;
+    }
+
+    .topnav a,
+    .topnav .navbar-text,
+    .topnav .logout-button-link {
+        padding: 10px;
+        width: 100%;
+    }
+
+    .topnav > div:first-child a {
+        font-size: 20px;
+        padding: 15px;
+    }
+
+    .topnav > div:last-child {
+        margin-top: 10px;
+    }
+
+    .main-content-wrapper {
+        padding: 10px;
+    }
+
+    .profile-box {
+        padding: 20px 25px;
+    }
+
+    .profile-title {
+        font-size: 1.8em;
+        margin-bottom: 20px;
+    }
+
+    .profile-item {
+        flex-direction: column; /* 모바일에서는 라벨과 값을 세로로 쌓음 */
+        align-items: flex-start;
+        margin-bottom: 10px;
+    }
+
+    .profile-label {
+        width: auto; /* 모바일에서는 너비 고정 제거 */
+        text-align: left;
+        margin-right: 0;
+        margin-bottom: 5px;
+    }
+
+    .profile-value {
+        width: 100%;
+        text-align: left;
+    }
+    
+    .profile-value textarea {
+        width: 100%;
+    }
+    
+    .profile-image-row {
+        flex-direction: column;
+        align-items: center;
+        margin-bottom: 20px;
+    }
+    .profile-image-row .profile-label {
+        text-align: center;
+        width: auto;
+        margin-bottom: 10px;
+    }
+
+    /* 모바일에서 버튼 스타일 */
+    .form-actions {
+        flex-direction: column;
+        gap: 10px;
+    }
+    .form-actions button {
+        width: 100%;
+    }
+    .form-actions {
+        flex-direction: column;
+        gap: 10px;
+        align-items: center;
+}
+    .save-button, .cancel-button {
+        width: 100%;
+        max-width: 100%; /* 모바일에서 전체 너비 사용 */
+
+}
+}
+    </style>
+</head>
+
+<body>
+
+    <div class="topnav">
+        <div>
+            <a href="index.html">Genie's WebPage</a>
+        </div>
+        <div id="auth-links">
+            <a href="login.html">Log In</a>
+            <a href="signup.html">Sign Up</a>
+        </div>
+    </div>
+
+    <div class="main-content-wrapper">
+        <div class="profile-box">
+            <h2 class="profile-title">Edit Profile</h2>
+            <div id="profile-error" style="color: red; margin-bottom: 10px; display: none;"></div>
+            <div id="password-error" style="color: red; margin-bottom: 10px; display: none;"></div>
+
+
+            <form id="profile-edit-form">
+                <div class="profile-item profile-image-row">
+                    <div class="profile-value profile-image-placeholder">
+                        <img id="profile-image-preview" src={{user.profile_image_filename}} style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">
+                        <label for="profile-image-upload" class="image-upload-label">
+                            <input type="file" id="profile-image-upload" accept="image/*" style="display: none;">
+                            image
+                        </label>
+                    </div>
+                </div>
+                <div class="profile-item">
+                    <div class="profile-label">NAME:</div>
+                    <div class="profile-value">
+                        <input type="text" id="username" name="username">
+                    </div>
+                </div>
+                <div class="profile-item">
+                    <div class="profile-label">BIO:</div>
+                    <div class="profile-value">
+                        <textarea id="bio" name="bio" rows="4"></textarea>
+                    </div>
+                </div>
+                <div class="profile-item">
+                    <div class="profile-label">E-MAIL:</div>
+                    <div class="profile-value">
+                        <input type="email" id="email" name="email" value="{{ user.email }}" readonly>
+                    </div>
+                </div>
+                
+                <div class="form-actions">
+                    <button type="submit" class="save-button" id="profile-submit-btn">SAVE</button>
+                    <button type="button" class="cancel-button" onclick="window.history.back()">CANCEL</button>
+                </div>
+            </form>
+
+            <hr style="margin: 30px 0; border: none; border-top: 1px solid rgba(255,255,255,0.2);">
+
+            <h3 class="profile-title">Change Password</h3>
+            <form id="password-change-form">
+                <div class="profile-item">
+                    <div class="profile-label">CURRENT PWD:</div>
+                    <div class="profile-value">
+                        <input type="password" id="current-password" name="currentPassword">
+                    </div>
+                </div>
+                <div class="profile-item">
+                    <div class="profile-label">NEW PWD:</div>
+                    <div class="profile-value">
+                        <input type="password" id="new-password" name="newPassword">
+                    </div>
+                </div>
+                <div class="profile-item">
+                    <div class="profile-label">CHECK NEW PWD:</div>
+                    <div class="profile-value">
+                        <input type="password" id="confirm-new-password" name="confirmNewPassword">
+                    </div>
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="save-button" id="password-submit-btn">CHANGE PASSWORD</button>
+                </div>
+            </form>
+
+        </div>
+    </div>
+
+    <div class="footer">
+    </div>
+
+    <script src="/js/auth.js"></script>
+    <script>
+        const profileForm = document.getElementById('profile-edit-form');
+        const usernameInput = document.getElementById('username'); // username input 필드 추가
+        const emailInput = document.getElementById('email');
+        const bioInput = document.getElementById('bio');
+        const imageInput = document.getElementById('profile-image-upload');
+        const imagePreview = document.getElementById('profile-image-preview'); // 이미지 미리보기 img 태그
+        const profileErrorEl = document.getElementById('profile-error'); // 프로필 정보 업데이트 오류 메시지
+        const profileSubmitBtn = document.getElementById('profile-submit-btn');
+
+        const passwordChangeForm = document.getElementById('password-change-form'); // 비밀번호 변경 폼
+        const currentPasswordInput = document.getElementById('current-password');
+        const newPasswordInput = document.getElementById('new-password');
+        const confirmNewPasswordInput = document.getElementById('confirm-new-password');
+        const passwordErrorEl = document.getElementById('password-error'); // 비밀번호 변경 오류 메시지
+        const passwordSubmitBtn = document.getElementById('password-submit-btn'); // 비밀번호 변경 버튼
+
+        // 현재 사용자 정보로 폼 채우기
+        function populateProfileForm(user) {
+            if (!user) {
+                alert("로그인이 필요합니다.");
+                window.location.href = "/login.html";
+                return;
+            }
+            usernameInput.value = user.username || ''; // 사용자 이름
+            emailInput.value = user.email || '';
+            bioInput.value = user.bio || '';
+            // 이미지 URL이 있다면 미리보기에 설정
+            if (user.profile_image_filename) {
+                imagePreview.src = `/static/profiles/${user.profile_image_filename}`;
+            } else {
+                imagePreview.src = '/static/default_profile.png'; // 기본 이미지
+            }
+        }
+
+        // 이미지 파일 선택 시 미리보기 업데이트
+        imageInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    imagePreview.src = event.target.result;
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // 프로필 정보 업데이트 폼 제출 이벤트 리스너
+        profileForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            profileErrorEl.innerText = '';
+            profileErrorEl.style.display = 'none'; // 오류 메시지 숨기기
+            profileSubmitBtn.disabled = true;
+            profileSubmitBtn.innerText = '저장 중...';
+
+            try {
+                // 1. 텍스트 정보(bio) 업데이트
+                const textData = { bio: bioInput.value };
+                // username과 email은 readonly로 설정했으므로, 여기서는 bio만 업데이트 대상으로 합니다.
+                // 만약 이메일이나 사용자 이름을 프론트에서 변경 가능하게 하려면 백엔드 API와도 맞춰야 합니다.
+                
+                const textResponse = await fetch('/api/users/me', {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(textData),
+                    credentials: 'include'
+                });
+
+                if (!textResponse.ok) {
+                    const errorData = await textResponse.json();
+                    throw new Error(errorData.detail || '프로필 정보 저장에 실패했습니다.');
+                }
+
+                // 2. 이미지 파일 업로드 (파일이 선택된 경우에만)
+                const imageFile = imageInput.files[0];
+                if (imageFile) {
+                    const formData = new FormData();
+                    formData.append("file", imageFile);
+
+                    // auth.js의 getCurrentUser()를 호출하여 user.id 가져오기
+                    const currentUser = await getCurrentUser();
+                    if (!currentUser || !currentUser.id) {
+                        throw new Error("사용자 ID를 가져올 수 없어 이미지 업로드를 할 수 없습니다.");
+                    }
+
+                    const imageResponse = await fetch('/api/users/me/upload-image', {
+                        method: 'POST',
+                        body: formData,
+                        headers: {
+                            'X-User-ID': currentUser.id, // X-User-ID 헤더 추가
+                        },
+                        credentials: 'include'
+                    });
+
+                    if (!imageResponse.ok) {
+                        const errorData = await imageResponse.json();
+                        throw new Error(errorData.detail || '이미지 업로드에 실패했습니다.');
+                    }
+                }
+
+                alert('프로필이 성공적으로 수정되었습니다.');
+                window.location.reload(); // 페이지 새로고침하여 변경된 정보 반영
+
+            } catch (error) {
+                profileErrorEl.innerText = error.message;
+                profileErrorEl.style.display = 'block'; // 오류 메시지 표시
+            } finally {
+                profileSubmitBtn.disabled = false;
+                profileSubmitBtn.innerText = 'SAVE'; // 버튼 텍스트 원래대로
+            }
+        });
+        
+        // 비밀번호 변경 폼 제출 이벤트 리스너
+        passwordChangeForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            passwordErrorEl.innerText = '';
+            passwordErrorEl.style.display = 'none'; // 오류 메시지 숨기기
+            passwordSubmitBtn.disabled = true;
+            passwordSubmitBtn.innerText = '변경 중...';
+
+            const currentPassword = currentPasswordInput.value;
+            const newPassword = newPasswordInput.value;
+            const confirmNewPassword = confirmNewPasswordInput.value;
+            
+            if (newPassword !== confirmNewPassword) {
+                passwordErrorEl.innerText = '새 비밀번호가 일치하지 않습니다.';
+                passwordErrorEl.style.display = 'block';
+                passwordSubmitBtn.disabled = false;
+                passwordSubmitBtn.innerText = 'CHANGE PASSWORD';
+                return;
+            }
+
+            const data = {
+                current_password: currentPassword,
+                new_password: newPassword
+            };
+
+            try {
+                const response = await fetch('/api/auth/change-password', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data),
+                    credentials: 'include'
+                });
+
+                if (response.ok) {
+                    alert('비밀번호가 성공적으로 변경되었습니다. 다시 로그인해주세요.');
+                    // 로그아웃 API 호출 및 세션 쿠키 삭제 (auth.js의 logout 로직과 동일)
+                    await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' });
+                    document.cookie = "session_id=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+                    window.location.href = '/login.html';
+                } else {
+                    const errorData = await response.json();
+                    passwordErrorEl.innerText = errorData.detail || '비밀번호 변경에 실패했습니다.';
+                    passwordErrorEl.style.display = 'block';
+                }
+            } catch (error) {
+                passwordErrorEl.innerText = '서버와 통신할 수 없습니다.';
+                passwordErrorEl.style.display = 'block';
+            } finally {
+                passwordSubmitBtn.disabled = false;
+                passwordSubmitBtn.innerText = 'CHANGE PASSWORD';
+            }
+        });
+
+        // 페이지 로드 시 현재 사용자 정보 가져와 폼 채우기 및 내비게이션 바 렌더링
+        document.addEventListener('DOMContentLoaded', async () => {
+            const user = await getCurrentUser();
+            populateProfileForm(user); // 폼 데이터 채우기
+            renderNavbar(); // 내비게이션 바 렌더링 (auth.js에 정의됨)
+        });
+    </script>
+    
+</body>
+</html>
