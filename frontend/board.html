@@ -1,0 +1,651 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>Genie's Bulletin Board</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        /* 기본 설정: 모든 요소에 box-sizing을 border-box로, 기본 마진/패딩 제거 */
+        * {
+            box-sizing: border-box;
+            font-family: Arial, Helvetica, sans-serif;
+            margin: 0;
+            padding: 0;
+            letter-spacing: 0.5px;
+        }
+
+        /* html과 body의 높이를 뷰포트 전체로 설정하여 스크롤 없이 꽉 차게 만듭니다. */
+        html,
+        body {
+            height: 100%;
+        }
+
+        /* body를 flex 컨테이너로 설정하고, 자식 요소들을 세로(column) 방향으로 정렬합니다. */
+        body {
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* --- Navigation Bar Styles --- */
+        .topnav {
+            background-color: #2B2730;
+            flex-shrink: 0; /* 높이가 줄어들지 않도록 고정 */
+            display: flex; /* .topnav 자체를 flex 컨테이너로 만듭니다. */
+            justify-content: space-between; /* Link 1과 (Link 2,3 그룹)을 양 끝으로 정렬 */
+            align-items: center; /* 수직 중앙 정렬 */
+            padding: 0 10px; /* 좌우 패딩 추가로 가장자리에서 약간 여백 주기 */
+        }
+
+        /* Link 1 (첫 번째 div) 스타일 */
+        .topnav>div:first-child {
+            display: flex; /* 내부 링크를 정렬하기 위해 flex 사용 */
+            align-items: center;
+        }
+
+        /* Link 2, 3 그룹 (두 번째 div) 스타일 */
+        .topnav>div:last-child {
+            display: flex; /* 내부 링크들을 정렬하기 위해 flex 사용 */
+            align-items: center;
+        }
+
+        /* 모든 topnav 링크에 공통 적용되는 스타일 */
+        .topnav a {
+            color: #E966A0;
+            text-align: center;
+            padding: 14px 16px;
+            text-decoration: none;
+            transition: background-color 0.3s, color 0.3s, font-size 0.3s; /* 부드러운 전환 효과 */
+        }
+
+        /* Link 1 (첫 번째 링크) 스타일: 크기 키우기 */
+        .topnav>div:first-child a {
+            font-size: 24px; /* Link 1 텍스트 크기 증가 */
+            font-weight: bold; /* 폰트 두께도 bold로 설정 */
+            padding: 20px 25px; /* 패딩도 더 크게 주어 버튼처럼 보이도록 */
+        }
+
+        /* 호버 시 색상 변경 */
+        .topnav a:hover {
+            background-color: #feffa9;
+            color: #9575DE;
+        }
+
+        /* --- Content Area Styles --- */
+        .content {
+            /* 기존 높이 고정 제거 및 flex-grow: 1 유지 */
+            background-color: #2B2730;
+            padding: 20px;
+            flex-grow: 1; /* 남은 수직 공간을 모두 차지 */
+            overflow: hidden; /* .content 자체에는 스크롤 숨김 (내부에서 관리) */
+
+            display: flex; /* .content를 flex 컨테이너로 설정 */
+            justify-content: center; /* .content2와 .board를 가로 중앙 정렬 (선택 사항) */
+            align-items: stretch; /* 자식 요소들이 높이를 채우도록 설정 */
+            gap: 20px; /* .content2와 .board 사이의 간격 */
+        }
+
+        /* .content2와 .board를 담는 새로운 컨테이너 */
+        .content2 {
+            display: flex; /* .content2를 flex 컨테이너로 설정 */
+            flex-direction: column; /* .contexts들을 세로로 쌓습니다. */
+            width: 20%; /* .content2의 너비 (기존 .contexts의 너비와 동일하게) */
+            /* .content2의 높이는 .content에서 flex-grow: 1을 받으므로 따로 설정할 필요 없음 */
+            gap: 20px; /* 두 contexts 사이에 간격 추가 */
+        }
+
+        .contexts {
+            /* 기존 contexts 스타일 유지 */
+            width: 100%;
+            height: 50%;
+            background-color: #6554AF;
+            border: 1px solid #6554AF;
+            border-radius: 20px;
+            display: flex;
+            flex-direction: column; /* 자식 요소들을 세로로 정렬 */
+            align-items: center; /* 수평 중앙 정렬 */
+            padding: 10px; /* 내부 여백 추가 */
+            overflow: hidden; /* 내용이 넘칠 경우 숨김 */
+        }
+
+        .contexts h3 {
+            text-align: center;
+            margin-bottom: 10px; /* 제목과 카드 사이 간격 */
+            color: #2B2730;
+        }
+
+        /* My Profile 링크 스타일 */
+        .contexts h3 a {
+            text-decoration: none;
+            color: #2B2730;
+            font-size: 1.2em; /* 제목 폰트 크기 조정 */
+        }
+
+        .board {
+            width: 70%;
+            background-color: #6554AF;
+            height: 100%; /* 부모인 .content의 높이를 꽉 채우도록 설정 */
+            border-radius: 20px;
+            border: 1px solid #6554AF;
+            padding: 20px; /* Adjust padding for board content */
+            display: flex;
+            flex-direction: column; /* Arrange board elements vertically */
+            /* justify-content: flex-start; Align content to the start */
+            align-items: center; /* Center items horizontally within the board */
+            font-size: 1.1em; /* Adjust general font size for board */
+            color: #E966A0;
+            overflow-y: auto; /* Allow vertical scrolling for board content if it overflows */
+        }
+
+        .margin10 {
+            margin-top: 20px;
+        }
+
+        .margin60 {
+            margin-top: 60px;
+        }
+
+        .promo {
+            width: 100%;
+            padding: 20px;
+            text-align: center; /* Center the text within promo */
+            margin-bottom: 20px; /* Space below the promo section */
+        }
+
+        strong {
+            font-size: 60px;
+            color: #feffa9; /* Make strong text more prominent */
+        }
+
+        .promo .sentence {
+            color: #2B2730; /* Adjust sentence color for better contrast */
+            font-size: 1.2em;
+        }
+
+        /* --- Footer Styles --- */
+        .footer {
+            background-color: #2B2730;
+            padding: 10px;
+            flex-shrink: 0; /* 높이가 줄어들지 않도록 고정 */
+            text-align: center;
+            color: #E966A0; /* Footer text color */
+            font-size: 0.9em;
+        }
+
+        .navbar-text {
+            color: #E966A0;
+            margin-right: 16px;
+            font-size: 16px;
+
+        }
+
+        /* auth.js에서 동적으로 추가되는 navbar-text 스타일 */
+        .navbar-text a {
+            font-weight: bold; /* 원한다면 글씨를 굵게 */
+            color: #feffa9; /* 사용자 이름의 색상을 다르게 지정 (예: #feffa9) */
+            padding: 0; /* padding 제거 */
+            transition: none; /* 전환 효과 제거 */
+            margin-left: 5px;
+        }
+
+        .navbar-text a:hover {
+            background-color: transparent; /* 호버 시 배경색 변경 없음 */
+            color: #feffa9; /* 호버 시 색상 변경 없음 */
+        }
+
+        /* auth.js에서 동적으로 추가되는 로그아웃 버튼 스타일 */
+        #logout-button {
+            /* id를 사용하므로 #으로 선택 */
+            background-color: #E966A0;
+            color: white;
+            border: none;
+            padding: 10px 16px; /* topnav 링크 패딩과 유사하게 */
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s, color 0.3s; /* 부드러운 전환 효과 */
+            font-size: 16px; /* 기본 링크 폰트 크기와 유사하게 */
+            text-decoration: none; /* 텍스트 밑줄 제거 */
+        }
+
+
+        #logout-button:hover {
+            background-color: #C75185; /* 호버 시 색상 변경 */
+            color: #feffa9; /* 호버 시 텍스트 색상 변경 (선택 사항) */
+        }
+
+        #about-me-card {
+            width: 100%; /* 부모 .contexts의 너비를 꽉 채움 */
+            flex-grow: 1; /* 남은 수직 공간을 채우도록 성장 */
+            display: flex; /* 프로필 카드를 flex 컨테이너로 만듭니다. */
+            justify-content: center; /* 수평 중앙 정렬 */
+            align-items: center; /* 수직 중앙 정렬 (내용이 적을 때) */
+            /* background-color: #f0f0f0; /* 디버깅용 배경색 (나중에 제거) */
+        }
+
+        .profile-card {
+            display: flex;
+            flex-direction: column; /* 이미지와 콘텐츠를 세로로 쌓음 */
+            align-items: center; /* 모든 내부 요소를 가로 중앙 정렬 */
+            width: 100%; /* 부모 #about-me-card의 너비를 꽉 채움 */
+            max-width: 250px; /* 카드 최대 너비 설정 (contexts 내에서 적절히) */
+            /* background-color: #fff; /* 카드 배경색 */
+            padding: 15px;
+            border-radius: 15px;
+            /* box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); */ /* 은은한 그림자 (선택 사항) */
+            color: #2B2730; /* 텍스트 색상 */
+        }
+
+        .profile-image {
+            width: 70%; /* 이미지 크기 조절 */
+            height: 70%;
+            border-radius: 10px;
+            object-fit: cover; /* 이미지가 잘리지 않고 채워지도록 */
+            margin-bottom: 15px; /* 이미지와 콘텐츠 사이 간격 */
+        }
+
+        .profile-content {
+            text-align: center; /* 내부 텍스트 중앙 정렬 */
+            width: 100%;
+            margin-top: 30px;
+        }
+
+        .profile-header {
+            display: flex;
+            justify-content: space-around; /* 가로 중앙 정렬 */
+            align-items: center; /* 수직 중앙 정렬 */
+            margin-bottom: 8px; /* 헤더와 바이오 사이 간격 */
+            margin-top: 10px;
+        }
+
+        .profile-header h4 {
+            margin: 0; /* h4의 기본 마진 제거 */
+            font-size: 1.1em; /* 사용자 이름 폰트 크기 */
+            color: #E966A0; /* 사용자 이름 색상 */
+            font-weight: bold;
+        }
+
+        .aaa {
+            text-decoration: none;
+            color: #E966A0;
+        }
+
+        .aaa:hover {
+            color: #feffa9;
+        }
+
+        .edit-link {
+            margin-left: 10px; /* 이름과 정보수정 링크 사이 간격 */
+            font-size: 0.8em; /* 링크 폰트 크기 */
+            color: #E966A0; /* 링크 색상 */
+            background-color: #2B2730;
+            text-decoration: none; /* 밑줄 제거 */
+            transition: color 0.3s;
+            padding-top: 5px;
+            padding-bottom: 5px;
+            padding-right: 10px;
+            padding-left: 10px;
+            border-radius: 10px;
+        }
+
+        .edit-link:hover {
+            color: #6554AF; /* 호버 시 색상 변경 */
+            background-color: #feffa9;
+        }
+
+        .profile-bio {
+            font-size: 0.9em; /* 자기소개 폰트 크기 */
+            color: #333;
+            line-height: 1.4;
+            margin: 0; /* 기본 마진 제거 */
+            max-height: 60px; /* 자기소개 최대 높이 제한 */
+            overflow: hidden; /* 넘치는 내용 숨김 */
+            text-overflow: ellipsis; /* 넘치는 텍스트 ...으로 표시 */
+            display: -webkit-box;
+            -webkit-line-clamp: 3; /* 최대 3줄까지 표시 */
+            -webkit-box-orient: vertical;
+            color: #2B2730; /* Adjusted for visibility */
+        }
+
+        /* --- Bulletin Board Specific Styles --- */
+        .board-header {
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(233, 102, 160, 0.3); /* Lighter pink border */
+        }
+
+        .board-header h2 {
+            color: #feffa9;
+            font-size: 2.2em;
+            font-weight: bold;
+        }
+
+        .write-post-btn {
+            background-color: #E966A0;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1.1em;
+            text-decoration: none; /* Remove underline for links */
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        .write-post-btn:hover {
+            background-color: #C75185;
+            color: #feffa9;
+        }
+
+        /* .search-bar 스타일은 제거되었습니다. */
+
+        .post-list {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .post-item {
+            background-color: #2B2730;
+            border-radius: 10px;
+            padding: 15px 20px;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            transition: transform 0.2s ease-in-out;
+            cursor: pointer;
+            text-decoration: none; /* Ensure the whole link doesn't have an underline */
+        }
+
+        .post-item:hover {
+            transform: translateY(-3px);
+        }
+
+        .post-item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .post-item-title {
+            color: #feffa9;
+            font-size: 1.4em;
+            font-weight: bold;
+            margin: 0;
+        }
+
+        .post-item-title:hover {
+            color: #9575DE; /* Hover color for post title */
+        }
+
+        .post-item-meta {
+            color: rgba(233, 102, 160, 0.7); /* Lighter pink for meta info */
+            font-size: 0.9em;
+            flex-shrink: 0; /* Prevent meta from shrinking too much */
+            margin-left: 15px; /* Space between title and meta */
+            text-align: right;
+        }
+
+        .post-item-content {
+            color: #C75185;
+            font-size: 1em;
+            line-height: 1.5;
+            max-height: 4.5em; /* Limit to 3 lines (1.5em * 3) */
+            overflow: hidden;
+            text-overflow: ellipsis; /* 넘치는 텍스트 ...으로 표시 */
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            margin-bottom: 10px;
+        }
+
+        /* .post-item-footer 스타일은 제거되었습니다. */
+
+        /* Responsive Layout (모바일) */
+        @media (max-width: 768px) {
+
+            /* 네비게이션 바는 이전 코드와 동일하게 적용됩니다. */
+            .topnav {
+                flex-direction: column; /* 작은 화면에서는 메뉴 항목을 세로로 쌓음 */
+                padding: 10px 0; /* 좌우 패딩 제거, 상하 패딩 유지 */
+            }
+
+            .topnav>div {
+                flex-direction: column; /* 각 div 내부 링크도 세로로 쌓음 */
+                width: 100%; /* 너비를 100%로 설정 */
+                align-items: stretch; /* 링크들이 전체 너비를 차지하도록 늘림 */
+            }
+
+            .topnav a {
+                padding: 10px; /* 모바일 환경에서 패딩 조정 */
+                width: 100%; /* 링크 너비를 100%로 설정 */
+            }
+
+            .topnav>div:first-child a {
+                font-size: 20px; /* 모바일 환경에서 Link 1 크기 조정 */
+                padding: 15px;
+            }
+
+            .topnav>div:last-child {
+                margin-top: 10px; /* Link 1 그룹과 Link 2,3 그룹 사이에 간격 추가 */
+            }
+
+            /* --- Content Area Styles (Mobile) --- */
+            .content {
+                flex-direction: column; /* .content2와 .board를 세로로 쌓음 */
+                align-items: center; /* 가로 중앙 정렬 (전체 너비 사용 시 불필요할 수 있음) */
+                gap: 0; /* 모바일에서는 간격 제거 (원하는 경우 유지 가능) */
+                overflow: auto; /* 모바일에서는 .content 자체에 스크롤 허용 (board만 보일 때 내용이 길어지면) */
+            }
+
+            .content2 {
+                display: none; /* 모바일 화면에서 .content2 전체를 숨깁니다. */
+            }
+
+            .board {
+                width: 90%; /* 모바일에서 .board 너비를 90%로 설정 */
+                height: auto; /* 높이를 콘텐츠에 따라 유동적으로 설정 */
+                flex-grow: 1; /* 남은 공간을 모두 차지하도록 하여 화면을 꽉 채웁니다. */
+                margin-bottom: 20px; /* 푸터와 간격 (선택 사항) */
+            }
+
+            .navbar-text {
+                color: #E966A0;
+                margin-right: 16px;
+                font-size: 16px;
+            }
+
+            /* navbar-text 안에 있는 특정 링크 스타일 재정의 */
+            .navbar-text a {
+                color: #feffa9; /* 사용자 이름의 색상을 다르게 지정 (예: #feffa9) */
+                text-decoration: none; /* 밑줄 제거 */
+                cursor: default; /* 마우스 커서를 기본으로 변경 (링크처럼 보이지 않게) */
+                padding: 0; /* padding 제거 */
+                transition: none; /* 전환 효과 제거 */
+            }
+
+            .navbar-text a:hover {
+                background-color: transparent; /* 호버 시 배경색 변경 없음 */
+                color: #feffa9; /* 호버 시 색상 변경 없음 */
+            }
+
+            #logout-button {
+                width: 100%; /* 전체 너비 차지 */
+                padding: 10px; /* 모바일 패딩 조정 */
+            }
+
+            .board-header {
+                flex-direction: column;
+                align-items: flex-start; /* Align title and button to the left */
+                gap: 10px;
+            }
+
+            .board-header h2 {
+                font-size: 1.8em;
+            }
+
+            .write-post-btn {
+                width: 100%;
+                text-align: center;
+            }
+
+            /* .search-bar 스타일은 제거되었습니다. */
+
+            .post-item-title {
+                font-size: 1.2em;
+            }
+
+            .post-item-content {
+                font-size: 0.95em;
+            }
+
+            .post-item-meta {
+                font-size: 0.8em;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="topnav">
+        <div>
+            <a href="index.html">Genie's WebPage</a>
+        </div>
+        <div id="auth-links">
+            <a href="login.html">Log In</a>
+            <a href="signup.html">Sign Up</a>
+        </div>
+    </div>
+
+    <div class="content">
+        <div class="content2">
+            <div class="contexts">
+                <h3 class="margin10"><a href="profile.html">My Profile</a></h3>
+                <div id="about-me-card"></div>
+            </div>
+            <div class="contexts">
+                <h3 class="margin10">Popular Posts</h3>
+                <div class="popular-posts-list" style="color: #2B2730; width: 100%; text-align: left; padding-left: 10px;">
+                    <p style="margin-bottom: 5px;">- Post title 1</p>
+                    <p style="margin-bottom: 5px;">- Post title 2</p>
+                    <p style="margin-bottom: 5px;">- Post title 3</p>
+                </div>
+            </div>
+        </div>
+        <div class="board">
+            <div class="board-header">
+                <h2>Bulletin Board</h2>
+                <a href="write_post.html" class="write-post-btn">Write New Post</a>
+            </div>
+
+            <div class="post-list" id="post-list-container">
+                <p style="text-align: center; color: #feffa9;">Loading posts . . .</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="footer">
+        &copy; 2025 Genie's WebPage. All rights reserved.
+    </div>
+
+    <script src="/js/auth.js"></script>
+    <script>
+        const aboutMeCard = document.getElementById('about-me-card');
+        const postListContainer = document.getElementById('post-list-container');
+
+        // "내 프로필" 카드 렌더링 함수
+        function renderAboutMe(user) {
+            if (!user) {
+                aboutMeCard.style.display = 'none';
+                return;
+            }
+
+            aboutMeCard.innerHTML = `
+                <div class="profile-card">
+                    <div>
+                        <img src="/static/profiles/${user.profile_image_filename}" class="profile-image" alt="No Image">
+                    </div>
+                    <div class="profile-content">
+                        <div class="profile-header">
+                            <h4><b><a href="profile.html" class="aaa">${user.username}</a></b></h4>
+                            <a href="edit_profile.html" class="edit-link">Edit</a>
+                        </div>
+                        <p class="profile-bio">${user.bio || ''}</p>
+                    </div>
+                </div>
+            `;
+        }
+
+        // 데이터베이스에서 가져온 게시글을 렌더링하는 함수
+        function renderPosts(posts) {
+            postListContainer.innerHTML = ''; // 기존 "게시글을 불러오는 중..." 텍스트 지우기
+
+            if (posts.length === 0) {
+                postListContainer.innerHTML = '<p style="text-align: center; color: #feffa9;">아직 게시글이 없습니다.</p>';
+                return;
+            }
+
+            posts.forEach(post => {
+                const postItem = document.createElement('a');
+                postItem.href = `post_detail.html?id=${post.id}`; // 상세 페이지를 위한 'id' 필드 가정
+                postItem.className = 'post-item';
+
+                // 작성 시간 포맷팅
+                const createdAt = new Date(post.created_at);
+                const formattedDate = createdAt.toLocaleDateString('ko-KR', {
+                    year: 'numeric',
+                    month: 'short',
+                    day: 'numeric'
+                });
+
+                // 실제 앱에서는 owner_id를 기반으로 작성자 사용자 이름을 가져와야 할 수 있습니다.
+                // 또는 백엔드에서 사용자 이름을 직접 보내줄 수도 있습니다.
+                // 현재는 owner_id를 작성자 이름으로 사용합니다.
+                const ownerName = post.owner_id; // 또는 API가 제공하는 post.owner_username
+
+                postItem.innerHTML = `
+                    <div class="post-item-header">
+                        <h3 class="post-item-title">${post.title}</h3>
+                        <span class="post-item-meta">작성자: ${ownerName} | ${formattedDate}</span>
+                    </div>
+                    <p class="post-item-content">${post.content}</p>
+                    `;
+                postListContainer.appendChild(postItem);
+            });
+        }
+
+        // 백엔드 API에서 게시글을 가져오는 함수
+        async function fetchPosts() {
+            try {
+                // 실제 백엔드 게시글 API 엔드포인트로 '/api/posts'를 변경해야 합니다
+                const response = await fetch('/api/posts');
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const posts = await response.json();
+                renderPosts(posts);
+            } catch (error) {
+                console.error('게시글을 불러오는 중 오류 발생:', error);
+                postListContainer.innerHTML = '<p style="text-align: center; color: #E966A0;">게시글을 불러오지 못했습니다. 나중에 다시 시도해주세요.</p>';
+            }
+        }
+
+        // DOM이 완전히 로드되었을 때 이벤트 리스너
+        document.addEventListener('DOMContentLoaded', async () => {
+            const user = await getCurrentUser();
+            renderNavbar(user); // auth.js 함수
+            renderAboutMe(user); // 사용자 세션에 따라 프로필 카드 렌더링
+            fetchPosts(); // 데이터베이스에서 게시글 가져와 렌더링
+        });
+    </script>
+
+
+</body>
+
+</html>
