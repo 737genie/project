@@ -43,7 +43,6 @@ services:
     environment:
     - DATABASE_URL=mysql+asyncmy://${DB_USER}:${DB_PASSWORD}@user_db:3306/user_db
     - REDIS_URL=${REDIS_URL}
-
     depends_on:
       user_db:
         condition: service_healthy
@@ -88,9 +87,7 @@ services:
     depends_on:
       blog_db:
         condition: service_healthy
-      redis_db:
-        condition: service_started
-
+        
     networks:
     - webnet
 

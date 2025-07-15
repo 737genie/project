@@ -2,13 +2,20 @@ import os
 import httpx
 from fastapi import FastAPI, Request, Response, HTTPException
 
+from auth_middleware import AuthMiddleware
+
 app = FastAPI(title="API Gateway")
 
 USER_SERVICE_URL = os.getenv("USER_SERVICE_URL")
+BLOG_SERVICE_URL = os.getenv("BLOG_SERVICE_URL")
+
+app.add_middleware(AuthMiddleware)
+
 
 @app.on_event("startup")
 async def startup_event():
-    app.state.client = httpx.AsyncClient()
+    timeout = httpx.Timeout(10.0, connect=5.0)
+    app.state.client = httpx.AsyncClient(timeout=timeout)
 
 @app.on_event("shutdown")
 async def shutdown_event():
@@ -21,6 +28,8 @@ async def reverse_proxy(request:Request):
 
     if path.startswith("/api/users") or path.startswith("/api/auth"):
         base_url = USER_SERVICE_URL
+    elif path.startswith("/api/blog"):
+        base_url = BLOG_SERVICE_URL
     else:
         raise HTTPException(status_code=404, detail="Endpoint not found")
     
@@ -31,7 +40,8 @@ async def reverse_proxy(request:Request):
             method=request.method,
             url=url,
             headers=request.headers,
-            content=await request.body()
+            content=await request.body(),
+            cookies=request.cookies
         )
         return Response(
             content=rp_resp.content,
@@ -40,4 +50,5 @@ async def reverse_proxy(request:Request):
         )
     except httpx.ConnectError:
         raise HTTPException(status_code=503, detail="Service unavailable")
-    
+    except httpx.ReadTimeout:
+        raise HTTPException(status_code=504, detail=f"Request timeout : {base_url}")

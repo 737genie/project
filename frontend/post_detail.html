@@ -1,0 +1,737 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>Post Detail - Genie's Bulletin Board</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: Arial, Helvetica, sans-serif;
+            margin: 0;
+            padding: 0;
+            letter-spacing: 0.8px;
+        }
+
+        html,
+        body {
+            height: 100%;
+        }
+
+        body {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .topnav {
+            background-color: #2B2730;
+            flex-shrink: 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 10px;
+        }
+
+        .topnav>div:first-child {
+            display: flex;
+            align-items: center;
+        }
+
+        .topnav>div:last-child {
+            display: flex;
+            align-items: center;
+        }
+
+        .topnav a {
+            color: #E966A0;
+            text-align: center;
+            padding: 14px 16px;
+            text-decoration: none;
+            transition: background-color 0.3s, color 0.3s, font-size 0.3s;
+        }
+
+        .topnav>div:first-child a {
+            font-size: 24px;
+            font-weight: bold;
+            padding: 20px 25px;
+        }
+
+        .topnav a:hover {
+            background-color: #feffa9;
+            color: #9575DE;
+        }
+
+        .content {
+            background-color: #2B2730;
+            padding: 20px;
+            flex-grow: 1;
+            overflow: hidden;
+
+            display: flex;
+            justify-content: center;
+            align-items: stretch;
+            gap: 20px;
+        }
+
+        .content2 {
+            display: flex;
+            flex-direction: column;
+            width: 20%;
+            gap: 20px;
+        }
+
+        .contexts {
+            width: 100%;
+            height: 50%;
+            background-color: #6554AF;
+            border: 1px solid #6554AF;
+            border-radius: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 10px;
+            overflow: hidden;
+        }
+
+        .contexts h3 {
+            text-align: center;
+            margin-bottom: 10px;
+            color: #2B2730;
+        }
+
+        .contexts h3 a {
+            text-decoration: none;
+            color: #2B2730;
+            font-size: 1.2em;
+        }
+
+        .board {
+            width: 70%;
+            background-color: #6554AF;
+            height: 100%;
+            border-radius: 20px;
+            border: 1px solid #6554AF;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            font-size: 1.1em;
+            color: #E966A0;
+            overflow-y: auto;
+        }
+
+        .margin10 {
+            margin-top: 20px;
+        }
+
+        .margin60 {
+            margin-top: 60px;
+        }
+
+        .promo {
+            width: 100%;
+            padding: 20px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        strong {
+            font-size: 60px;
+            color: #feffa9;
+        }
+
+        .promo .sentence {
+            color: #2B2730;
+            font-size: 1.2em;
+        }
+
+        .footer {
+            background-color: #2B2730;
+            padding: 10px;
+            flex-shrink: 0;
+            text-align: center;
+            color: #E966A0;
+            font-size: 0.9em;
+        }
+
+        .navbar-text {
+            color: #E966A0;
+            margin-right: 16px;
+            font-size: 16px;
+        }
+
+        .navbar-text a {
+            font-weight: bold;
+            color: #feffa9;
+            padding: 0;
+            transition: none;
+            margin-left: 5px;
+        }
+
+        .navbar-text a:hover {
+            background-color: transparent;
+            color: #feffa9;
+        }
+
+        #logout-button {
+            background-color: #E966A0;
+            color: white;
+            border: none;
+            padding: 10px 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s, color 0.3s;
+            font-size: 16px;
+            text-decoration: none;
+        }
+
+        #logout-button:hover {
+            background-color: #C75185;
+            color: #feffa9;
+        }
+
+        #about-me-card {
+            width: 100%;
+            flex-grow: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 10px 0;
+        }
+
+        .profile-card {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            max-width: 250px;
+            padding: 10px;
+            border-radius: 15px;
+            color: #2B2730;
+            overflow: hidden;
+        }
+
+        .profile-image {
+            width: 100%;
+            max-width: 230px;
+            max-height: 180px;
+            border-radius: 10px;
+            object-fit: cover;
+            margin-bottom: 10px;
+        }
+
+        .profile-content {
+            text-align: center;
+            width: 100%;
+            margin-top: 5px;
+        }
+
+        .profile-header {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            margin-bottom: 5px;
+            margin-top: 5px;
+            flex-wrap: wrap;
+            gap: 5px;
+        }
+
+        .profile-header h4 {
+            margin: 0;
+            font-size: 1.1em;
+            color: #E966A0;
+            font-weight: bold;
+            flex-shrink: 0;
+        }
+
+        .aaa {
+            text-decoration: none;
+            color: #E966A0;
+        }
+
+        .aaa:hover {
+            color: #feffa9;
+        }
+
+        .edit-link {
+            font-size: 0.8em;
+            color: #E966A0;
+            background-color: #2B2730;
+            text-decoration: none;
+            transition: color 0.3s;
+            padding: 3px 8px;
+            border-radius: 10px;
+            flex-shrink: 0;
+        }
+
+        .edit-link:hover {
+            color: #6554AF;
+            background-color: #feffa9;
+        }
+
+        .profile-bio {
+            font-size: 0.85em;
+            color: #333;
+            line-height: 1.3;
+            margin: 0;
+            max-height: 50px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            word-break: break-word;
+            padding: 0 5px;
+        }
+
+        .board-header {
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .board-header h2 {
+            color: #feffa9;
+            font-size: 2.2em;
+            font-weight: bold;
+        }
+
+        .my-post-btn {
+            background-color: #2B2730;
+            color: #E966A0;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1.1em;
+            text-decoration: none;
+            transition: background-color 0.3s, color 0.3s;
+            margin-right: 10px;
+        }
+        .my-post-btn:hover {
+            background-color: #333;
+        }
+
+        .write-post-btn {
+            background-color: #E966A0;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1.1em;
+            text-decoration: none;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        .write-post-btn:hover {
+            background-color: #C75185;
+            color: #feffa9;
+        }
+
+        #article-detail-container {
+            width: 100%;
+            background-color: #2B2730;
+            border-radius: 10px;
+            padding: 25px 30px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+            color: #E966A0;
+            margin-top: 10px;
+        }
+
+        .article-header h2 {
+            color: #feffa9;
+            font-size: 2em;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .article-meta {
+            color: rgba(233, 102, 160, 0.7);
+            font-size: 0.95em;
+            text-align: center;
+            margin-bottom: 15px;
+            border-bottom: 1px solid rgba(233, 102, 160, 0.2);
+            padding-bottom: 10px;
+        }
+
+        .article-tags {
+            margin-top: 10px;
+            margin-bottom: 20px;
+            font-size: 0.85em;
+            color: #9575DE;
+            text-align: center;
+        }
+
+        .post-tag {
+            background-color: rgba(149, 117, 222, 0.2);
+            border-radius: 5px;
+            padding: 3px 8px;
+            margin: 0 2px 5px 2px;
+            display: inline-block;
+        }
+
+        .article-content {
+            color: #C75185;
+            font-size: 1.1em;
+            line-height: 1.8;
+            margin-bottom: 20px;
+            white-space: pre-wrap;
+            text-align: left;
+        }
+
+        .article-image {
+            max-width: 100%;
+            height: auto;
+            border-radius: 8px;
+            margin-top: 15px;
+            margin-bottom: 15px;
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+        }
+
+        .article-actions {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            padding-top: 20px;
+        }
+
+        .action-button {
+            background-color: #E966A0;
+            color: white;
+            border: none;
+            padding: 10px 25px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1em;
+            text-decoration: none;
+            transition: background-color 0.3s, transform 0.2s;
+        }
+
+        .action-button:hover {
+            background-color: #C75185;
+            transform: translateY(-2px);
+        }
+
+        .action-button.go-back {
+            background-color: #2B2730;
+            color:#E966A0;
+        }
+
+        .action-button.go-back:hover {
+            background-color: #53458c;
+        }
+
+        @media (max-width: 768px) {
+            .topnav {
+                flex-direction: column;
+                padding: 10px 0;
+            }
+
+            .topnav>div {
+                flex-direction: column;
+                width: 100%;
+                align-items: stretch;
+            }
+
+            .topnav a {
+                padding: 10px;
+                width: 100%;
+            }
+
+            .topnav>div:first-child a {
+                font-size: 20px;
+                padding: 15px;
+            }
+
+            .topnav>div:last-child {
+                margin-top: 10px;
+            }
+
+            .content {
+                flex-direction: column;
+                align-items: center;
+                gap: 0;
+                overflow: auto;
+            }
+
+            .content2 {
+                display: none;
+            }
+
+            .board {
+                width: 90%;
+                height: auto;
+                flex-grow: 1;
+                margin-bottom: 20px;
+            }
+
+            .navbar-text {
+                color: #E966A0;
+                margin-right: 16px;
+                font-size: 16px;
+            }
+
+            .navbar-text a {
+                color: #feffa9;
+                text-decoration: none;
+                cursor: default;
+                padding: 0;
+                transition: none;
+            }
+
+            .navbar-text a:hover {
+                background-color: transparent;
+                color: #feffa9;
+            }
+
+            #logout-button {
+                width: 100%;
+                padding: 10px;
+            }
+
+            .board-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+
+            .board-header h2 {
+                font-size: 1.8em;
+            }
+
+            .my-post-btn,
+            .write-post-btn {
+                width: 100%;
+                text-align: center;
+                margin-right: 0;
+                margin-bottom: 10px;
+            }
+
+            .action-button {
+                width: 100%;
+                text-align: center;
+            }
+
+            #article-detail-container {
+                padding: 15px 20px;
+            }
+
+            .article-detail-container {
+              height: 90%;
+            }
+
+            .article-header h2 {
+                font-size: 1.5em;
+            }
+
+            .article-meta {
+                font-size: 0.9em;
+            }
+
+            .article-content {
+                font-size: 1em;
+            }
+
+            .article-image {
+                margin-top: 10px;
+                margin-bottom: 10px;
+            }
+
+            .article-actions {
+                flex-direction: column;
+                gap: 10px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="topnav">
+        <div>
+            <a href="index.html">Genie's WebPage</a>
+        </div>
+        <div id="auth-links">
+            <a href="login.html">Log In</a>
+            <a href="signup.html">Sign Up</a>
+        </div>
+    </div>
+
+    <div class="content">
+        <div class="content2">
+            <div class="contexts">
+                <h3 class="margin10"><a href="profile.html">My Profile</a></h3>
+                <div id="about-me-card"></div>
+            </div>
+            <div class="contexts">
+                <h3 class="margin10">Popular Posts</h3>
+                <div class="popular-posts-list"
+                    style="color: #2B2730; width: 100%; text-align: left; padding-left: 10px;">
+                    <p style="margin-bottom: 5px;">- Post title 1</p>
+                    <p style="margin-bottom: 5px;">- Post title 2</p>
+                    <p style="margin-bottom: 5px;">- Post title 3</p>
+                </div>
+            </div>
+        </div>
+        <div class="board">
+            <div class="board-header">
+                <div>
+                </div>
+            </div>
+
+            <div id="article-detail-container" class="article-detail-container">
+                <p style="text-align: center; color: #feffa9;">Loading post...</p>
+            </div>
+
+            <div class="article-actions">
+                <a href="edit_post.html?id=" class="action-button edit-button" id="edit-post-button" style="display: none;">Edit</a>
+                <button class="action-button delete-button" id="delete-post-button" style="display: none;">Delete</button>
+                <a href="board.html" class="action-button go-back">Back to List</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="footer">
+        &copy; 2025 Genie's WebPage. All rights reserved.
+    </div>
+
+    <script src="/js/auth.js"></script>
+    <script>
+        const aboutMeCard = document.getElementById('about-me-card');
+
+        function renderAboutMe(user) {
+            if (!user) {
+                aboutMeCard.style.display = 'none';
+                return;
+            }
+
+            aboutMeCard.innerHTML = `
+                <div class="profile-card">
+                    <div>
+                        <img src="/static/profiles/${user.profile_image_filename}" class="profile-image" alt="No Image">
+                    </div>
+                    <div class="profile-content">
+                        <div class="profile-header">
+                            <h4><b><a href="profile.html" class="aaa">${user.username}</a></b></h4>
+                            <a href="edit_profile.html" class="edit-link">Edit</a>
+                        </div>
+                        <p class="profile-bio">${user.bio || ''}</p>
+                    </div>
+                </div>
+            `;
+        }
+
+        async function fetchArticleDetails() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const articleId = urlParams.get('id');
+            const articleDetailContainer = document.getElementById('article-detail-container');
+            const editButton = document.getElementById('edit-post-button');
+            const deleteButton = document.getElementById('delete-post-button');
+
+            if (!articleId) {
+                articleDetailContainer.innerHTML = '<p style="text-align: center; color: #E966A0;">No article ID provided.</p>';
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/blog/articles/${articleId}`);
+                if (!response.ok) {
+                    if (response.status === 404) {
+                        articleDetailContainer.innerHTML = '<p style="text-align: center; color: #E966A0;">Article not found.</p>';
+                    } else {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return;
+                }
+                const data = await response.json();
+
+                const article = data.article;
+                const author = data.author;
+                const image_urls = data.image_urls;
+
+                let formattedDate = 'Unknown Date';
+                if (article.create_at) {
+                    const createdAt = new Date(article.create_at);
+                    if (!isNaN(createdAt.getTime())) {
+                        formattedDate = createdAt.toLocaleDateString('en-US', {
+                            year: 'numeric',
+                            month: 'short',
+                            day: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit'
+                        });
+                    }
+                }
+
+                const tagsHtml = article.tags ?
+                    article.tags.split(',').map(tag => `<span class="post-tag">#${tag.trim()}</span>`).join(' ') :
+                    '<span style="color: rgba(233, 102, 160, 0.5);">No tags</span>';
+
+                const articleDetailHtml = `
+                    <div class="article-header">
+                        <h2>${article.title}</h2>
+                        <p class="article-meta">
+                            Author: ${author.username || 'Unknown'} | Date: ${formattedDate} | Views: ${article.views}
+                        </p>
+                        <div class="article-tags">${tagsHtml}</div>
+                    </div>
+                    <div class="article-content">
+                        <p>${article.content.replace(/\n/g, '<br>')}</p>
+                        ${image_urls.length > 0 ? image_urls.map(url => `<img src="${url}" alt="Article Image" class="article-image">`).join('') : ''}
+                    </div>
+                `;
+                articleDetailContainer.innerHTML = articleDetailHtml;
+
+                const currentUser = await getCurrentUser();
+                if (currentUser && currentUser.id === article.owner_id) {
+                    editButton.href = `write_post.html?id=${article.id}`;
+                    editButton.style.display = 'inline-block';
+                    deleteButton.style.display = 'inline-block';
+
+                    deleteButton.onclick = async () => {
+                        if (confirm('Are you sure you want to delete this post?')) {
+                            try {
+                                const token = localStorage.getItem('access_token');
+                                const deleteResponse = await fetch(`/api/blog/articles/${article.id}`, {
+                                    method: 'DELETE',
+                                    headers: {
+                                        'Authorization': `Bearer ${token}`
+                                    }
+                                });
+
+                                if (!deleteResponse.ok) {
+                                    throw new Error(`Deletion failed! status: ${deleteResponse.status}`);
+                                }
+
+                                alert('Post successfully deleted.');
+                                window.location.href = 'index.html';
+                            } catch (deleteError) {
+                                console.error('Error deleting post:', deleteError);
+                                alert('Failed to delete post: ' + deleteError.message);
+                            }
+                        }
+                    };
+                }
+
+            } catch (error) {
+                console.error('Error fetching article details:', error);
+                articleDetailContainer.innerHTML = '<p style="text-align: center; color: #E966A0;">Failed to load article. Error: ' + error.message + '</p>';
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            const user = await getCurrentUser();
+            renderNavbar(user);
+            renderAboutMe(user);
+            fetchArticleDetails();
+        });
+    </script>
+</body>
+
+</html>
