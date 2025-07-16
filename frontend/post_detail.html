@@ -105,6 +105,17 @@
             color: #2B2730;
             font-size: 1.2em;
         }
+        .contexts h1 {
+            text-align: center;
+            margin-bottom: 10px;
+            color: #2B2730;
+        }
+
+        .contexts h1 a {
+            text-decoration: none;
+            color: #2B2730;
+            font-size: 1.2em;
+        }
 
         .board {
             width: 70%;
@@ -310,6 +321,7 @@
             transition: background-color 0.3s, color 0.3s;
             margin-right: 10px;
         }
+
         .my-post-btn:hover {
             background-color: #333;
         }
@@ -339,6 +351,7 @@
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
             color: #E966A0;
             margin-top: 10px;
+            flex-grow: 1;
         }
 
         .article-header h2 {
@@ -420,11 +433,45 @@
 
         .action-button.go-back {
             background-color: #2B2730;
-            color:#E966A0;
+            color: #E966A0;
         }
 
         .action-button.go-back:hover {
             background-color: #53458c;
+        }
+
+        .popular-post {
+            margin-top: 5px;
+            height: 40px;
+            align-items: center;
+            background-color: #2B2730;
+            color: #FEFFA9;
+            padding: 5px;
+            border-radius: 10px;
+            display: flex;
+            justify-content: space-around;
+        }
+
+        .popular-posts-list a {
+            /* 추가: 인기 포스트 링크 스타일 */
+            text-decoration: none;
+            color: #2B2730;
+            display: block;
+            margin-bottom: 5px;
+            padding: 3px 0;
+            transition: color 0.2s;
+        }
+
+        .popular-post:hover {
+            color: #E966A0;
+            background-color: #333;
+        }
+
+        .popular-post span {
+            /* 추가: 작성자/조회수 텍스트 스타일 */
+            font-size: 0.9em;
+            color: #555;
+            margin-left: 5px;
         }
 
         @media (max-width: 768px) {
@@ -523,7 +570,7 @@
             }
 
             .article-detail-container {
-              height: 90%;
+                height: 90%;
             }
 
             .article-header h2 {
@@ -565,17 +612,15 @@
 
     <div class="content">
         <div class="content2">
-            <div class="contexts">
+            <div class="contexts" id="cont1">
                 <h3 class="margin10"><a href="profile.html">My Profile</a></h3>
                 <div id="about-me-card"></div>
             </div>
             <div class="contexts">
-                <h3 class="margin10">Popular Posts</h3>
-                <div class="popular-posts-list"
-                    style="color: #2B2730; width: 100%; text-align: left; padding-left: 10px;">
-                    <p style="margin-bottom: 5px;">- Post title 1</p>
-                    <p style="margin-bottom: 5px;">- Post title 2</p>
-                    <p style="margin-bottom: 5px;">- Post title 3</p>
+                <h1 class="margin10">Popular Posts</h1>
+                <div class="popular-posts-list" id="popular-posts-list-container"
+                    style="color: #2B2730; width: 100%; text-align: left; margin-top:20; padding: 20px;">
+                    <p style="text-align: center;">Loading popular posts...</p>
                 </div>
             </div>
         </div>
@@ -590,8 +635,10 @@
             </div>
 
             <div class="article-actions">
-                <a href="edit_post.html?id=" class="action-button edit-button" id="edit-post-button" style="display: none;">Edit</a>
-                <button class="action-button delete-button" id="delete-post-button" style="display: none;">Delete</button>
+                <a href="edit_post.html?id=" class="action-button edit-button" id="edit-post-button"
+                    style="display: none;">Edit</a>
+                <button class="action-button delete-button" id="delete-post-button"
+                    style="display: none;">Delete</button>
                 <a href="board.html" class="action-button go-back">Back to List</a>
             </div>
         </div>
@@ -605,27 +652,37 @@
     <script>
         const aboutMeCard = document.getElementById('about-me-card');
 
+        const cont1 = document.getElementById('cont1');
         function renderAboutMe(user) {
             if (!user) {
-                aboutMeCard.style.display = 'none';
+                cont1.innerHTML = `
+                    <div class="contexts" style="background-color: #2B2730; flex-grow:1;">
+                        <h3 class="margin10"><a style="text-decoration: none; color: #2B2730;" href="profile.html">My
+                                Profile</a></h3>
+                        <div id="about-me-card"><h2 style="color:#feffa9; position: relative; top: -25px;">Members Only</h2></div>
+                    </div>
+                `;
                 return;
             }
 
             aboutMeCard.innerHTML = `
                 <div class="profile-card">
                     <div>
-                        <img src="/static/profiles/${user.profile_image_filename}" class="profile-image" alt="No Image">
-                    </div>
+                        <img src="/static/profiles/${user.profile_image_filename}" class="profile-image" alt="No Image"></div>
                     <div class="profile-content">
+                        
                         <div class="profile-header">
                             <h4><b><a href="profile.html" class="aaa">${user.username}</a></b></h4>
                             <a href="edit_profile.html" class="edit-link">Edit</a>
                         </div>
+                        
                         <p class="profile-bio">${user.bio || ''}</p>
+                        
                     </div>
                 </div>
-            `;
-        }
+            `
+        };
+
 
         async function fetchArticleDetails() {
             const urlParams = new URLSearchParams(window.location.search);
@@ -688,7 +745,9 @@
                 `;
                 articleDetailContainer.innerHTML = articleDetailHtml;
 
+
                 const currentUser = await getCurrentUser();
+
                 if (currentUser && currentUser.id === article.owner_id) {
                     editButton.href = `write_post.html?id=${article.id}`;
                     editButton.style.display = 'inline-block';
@@ -701,7 +760,8 @@
                                 const deleteResponse = await fetch(`/api/blog/articles/${article.id}`, {
                                     method: 'DELETE',
                                     headers: {
-                                        'Authorization': `Bearer ${token}`
+                                        'X-User-Id': currentUser.id,
+                                        'Authorization': token ? `Bearer ${token}` : ''
                                     }
                                 });
 
@@ -725,11 +785,45 @@
             }
         }
 
+        const popularPostsListContainer = document.getElementById('popular-posts-list-container'); // 추가
+
+        //popular posts
+        async function fetchPopularPosts() {
+            try {
+                const response = await fetch(`/api/blog/popular-articles?limit=5`); // limit=5로 5개만 요청
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const popularPosts = await response.json();
+
+                popularPostsListContainer.innerHTML = ''; // 기존 "Loading popular posts..." 메시지 지우기
+
+                if (popularPosts.length === 0) {
+                    popularPostsListContainer.innerHTML = '<p style="text-align: center;">아직 인기 게시글이 없습니다.</p>';
+                    return;
+                }
+
+                popularPosts.forEach(post => {
+                    const postLink = document.createElement('a');
+                    postLink.href = `post_detail.html?id=${post.id}`;
+                    postLink.innerHTML = `
+                        <div class=popular-post>${post.title} 
+                        <span>(by ${post.author_username || 'Unknown'} / Views: ${post.views || 0})</span></div>
+                    `;
+                    popularPostsListContainer.appendChild(postLink);
+                });
+
+            } catch (error) {
+                console.error('인기 게시글을 불러오는 중 오류 발생:', error);
+                popularPostsListContainer.innerHTML = '<p style="text-align: center;">인기 게시글을 불러오지 못했습니다.</p>';
+            }
+        }
         document.addEventListener('DOMContentLoaded', async () => {
             const user = await getCurrentUser();
             renderNavbar(user);
             renderAboutMe(user);
             fetchArticleDetails();
+            fetchPopularPosts();
         });
     </script>
 </body>

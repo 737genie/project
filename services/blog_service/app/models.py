@@ -17,6 +17,7 @@ class BlogArticle(SQLModel, table=True):
   owner_id: int
   tags: Optional[str] = Field(default=None)
   views: int = Field(default=0) # 조회수 필드 추가, 기본값은 0
+  
 
 class ArticleCreate(SQLModel):
     title: str

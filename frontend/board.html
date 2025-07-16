@@ -147,6 +147,20 @@
             font-size: 1.2em;
             /* 제목 폰트 크기 조정 */
         }
+        .contexts h1 {
+            text-align: center;
+            margin-bottom: 10px;
+            /* 제목과 카드 사이 간격 */
+            color: #2B2730;
+        }
+
+        /* My Profile 링크 스타일 */
+        .contexts h1 a {
+            text-decoration: none;
+            color: #2B2730;
+            font-size: 1.2em;
+            /* 제목 폰트 크기 조정 */
+        }
 
         .board {
             width: 70%;
@@ -455,6 +469,7 @@
             justify-content: space-between;
             align-items: center;
             margin-bottom: 10px;
+            margin-top: 10px;
         }
 
         .post-item-title {
@@ -481,6 +496,7 @@
         }
 
         .post-item-content {
+            flex-grow: 1;
             color: #C75185;
             font-size: 1em;
             line-height: 1.5;
@@ -494,6 +510,29 @@
             -webkit-box-orient: vertical;
             margin-bottom: 10px;
         }
+
+        .post-item-body {
+            display: flex;
+            /* 이미지를 텍스트 옆에 배치하기 위해 flexbox 사용 */
+            gap: 15px;
+            /* 이미지와 텍스트 사이의 간격 */
+            margin-bottom: 10px;
+            justify-content: space-between;
+        }
+
+        .post-preview-image {
+            width: 120px;
+            /* 미리보기 이미지의 너비 */
+            height: 90px;
+            /* 미리보기 이미지의 높이 */
+            object-fit: cover;
+            /* 이미지가 잘리지 않고 비율을 유지하며 채워지도록 */
+            border-radius: 5px;
+            /* 모서리를 둥글게 */
+            flex-shrink: 0;
+            /* 내용이 줄어들 때 이미지가 줄어들지 않도록 */
+        }
+
 
         /* post_item 내 태그 컨테이너 */
         .post-tags {
@@ -512,6 +551,72 @@
             margin-right: 5px;
             display: inline-block;
             /* 태그들이 한 줄에 표시되도록 */
+        }
+
+        /* Pagination Button Styles */
+        .pagination-button {
+            background-color: #2B2730;
+            color: #E966A0;
+            border: 1px solid #E966A0;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9em;
+            transition: background-color 0.3s, color 0.3s, border-color 0.3s;
+        }
+
+        .pagination-button:hover:not(:disabled) {
+            background-color: #E966A0;
+            color: #feffa9;
+            border-color: #feffa9;
+        }
+
+        .pagination-button:disabled {
+            background-color: #333;
+            color: #666;
+            cursor: not-allowed;
+            border-color: #333;
+        }
+
+        .pagination-button.active {
+            background-color: #E966A0;
+            color: #feffa9;
+            border-color: #feffa9;
+            font-weight: bold;
+        }
+
+        .popular-post {
+            margin-top: 5px;
+            height: 40px;
+            align-items: center;
+            background-color: #2B2730;
+            color: #FEFFA9;
+            padding: 5px;
+            border-radius: 10px;
+            display: flex;
+            justify-content: space-around;
+        }
+
+        .popular-posts-list a {
+            /* 추가: 인기 포스트 링크 스타일 */
+            text-decoration: none;
+            color: #2B2730;
+            display: block;
+            margin-bottom: 5px;
+            padding: 3px 0;
+            transition: color 0.2s;
+        }
+
+        .popular-post:hover {
+            color: #E966A0;
+            background-color: #333;
+        }
+
+        .popular-post span {
+            /* 추가: 작성자/조회수 텍스트 스타일 */
+            font-size: 0.9em;
+            color: #555;
+            margin-left: 5px;
         }
 
         /* .post-item-footer 스타일은 제거되었습니다. */
@@ -688,17 +793,15 @@
 
     <div class="content">
         <div class="content2">
-            <div class="contexts">
+            <div class="contexts" id="cont1">
                 <h3 class="margin10"><a href="profile.html">My Profile</a></h3>
                 <div id="about-me-card"></div>
             </div>
             <div class="contexts">
-                <h3 class="margin10">Popular Posts</h3>
-                <div class="popular-posts-list"
-                    style="color: #2B2730; width: 100%; text-align: left; padding-left: 10px;">
-                    <p style="margin-bottom: 5px;">- Post title 1</p>
-                    <p style="margin-bottom: 5px;">- Post title 2</p>
-                    <p style="margin-bottom: 5px;">- Post title 3</p>
+                <h1 class="margin10">Popular Posts</h1>
+                <div class="popular-posts-list" id="popular-posts-list-container"
+                    style="color: #2B2730; width: 100%; text-align: left; margin-top:20; padding: 20px;">
+                    <p style="text-align: center;">Loading popular posts...</p>
                 </div>
             </div>
         </div>
@@ -714,6 +817,8 @@
             <div class="post-list" id="post-list-container">
                 <p style="text-align: center; color: #feffa9;">Loading posts . . .</p>
             </div>
+            <div id="pagination-controls" style="margin-top: 20px; display: flex; justify-content: center; gap: 10px;">
+            </div>
         </div>
     </div>
 
@@ -725,33 +830,49 @@
     <script>
         const aboutMeCard = document.getElementById('about-me-card');
         const postListContainer = document.getElementById('post-list-container');
+        const paginationControls = document.getElementById('pagination-controls');
+        const popularPostsListContainer = document.getElementById('popular-posts-list-container'); // 추가
 
-        // "내 프로필" 카드 렌더링 함수
+        // `let`으로 선언하여 값을 변경할 수 있도록 합니다.
+        let currentPage = 1;
+        const postsPerPage = 4; // 백엔드의 기본 'size'와 일치시키세요
+
+        // "내 프로필" 카드 렌더링 함수 (변경 없음)
+        const cont1 = document.getElementById('cont1');
         function renderAboutMe(user) {
             if (!user) {
-                aboutMeCard.style.display = 'none';
+                cont1.innerHTML = `
+                    <div class="contexts" style="background-color: #2B2730; flex-grow:1;">
+                        <h3 class="margin10"><a style="text-decoration: none; color: #2B2730;" href="profile.html">My
+                                Profile</a></h3>
+                        <div id="about-me-card"><h2 style="color:#feffa9; position: relative; top: -25px;">Members Only</h2></div>
+                    </div>
+                `;
                 return;
             }
 
             aboutMeCard.innerHTML = `
                 <div class="profile-card">
                     <div>
-                        <img src="/static/profiles/${user.profile_image_filename}" class="profile-image" alt="No Image">
-                    </div>
+                        <img src="/static/profiles/${user.profile_image_filename}" class="profile-image" alt="No Image"></div>
                     <div class="profile-content">
+                        
                         <div class="profile-header">
                             <h4><b><a href="profile.html" class="aaa">${user.username}</a></b></h4>
                             <a href="edit_profile.html" class="edit-link">Edit</a>
                         </div>
+                        
                         <p class="profile-bio">${user.bio || ''}</p>
+                        
                     </div>
                 </div>
-            `;
-        }
+            `
+        };
 
-        // 데이터베이스에서 가져온 게시글을 렌더링하는 함수
+
+        // 데이터베이스에서 가져온 게시글을 렌더링하는 함수 (변경 없음)
         function renderPosts(posts) {
-            postListContainer.innerHTML = ''; // 기존 "게시글을 불러오는 중..." 텍스트 지우기
+            postListContainer.innerHTML = '';
 
             if (posts.length === 0) {
                 postListContainer.innerHTML = '<p style="text-align: center; color: #feffa9;">아직 게시글이 없습니다.</p>';
@@ -760,13 +881,11 @@
 
             posts.forEach(post => {
                 const postItem = document.createElement('a');
-                postItem.href = `post_detail.html?id=${post.id}`; // 상세 페이지를 위한 'id' 필드 가정
+                postItem.href = `post_detail.html?id=${post.id}`;
                 postItem.className = 'post-item';
 
-                // 작성 시간 포맷팅
-                let formattedDate = '날짜 알 수 없음'; // 기본값 설정
-
-                if (post.create_at) { // 필드 이름이 create_at
+                let formattedDate = '날짜 알 수 없음';
+                if (post.create_at) {
                     const createdAt = new Date(post.create_at);
                     if (!isNaN(createdAt)) {
                         formattedDate = createdAt.toLocaleDateString('ko-KR', {
@@ -777,50 +896,174 @@
                     }
                 }
 
-                // 태그 렌더링
                 const tagsHtml = post.tags ?
                     post.tags.split(',').map(tag => `<span class="post-tag">#${tag.trim()}</span>`).join(' ') :
                     '';
 
-                // 백엔드에서 owner_id를 보냈으므로, 여기서는 owner_id를 사용합니다.
-                // 만약 백엔드에서 사용자 이름도 같이 내려준다면 post.owner_username 등을 사용할 수 있습니다.
-                const ownerName = post.owner_id;
+                const ownerName = post.author_username || post.owner_id;
+
+                const imageUrl = post.image_url || '/static/images/placeholder.png';
 
                 postItem.innerHTML = `
-                    <div class="post-item-header">
-                        <h3 class="post-item-title">${post.title}</h3>
-                        <span class="post-item-meta">
-                            작성자: ${ownerName} | ${formattedDate} | 조회수: ${post.views || 0}
-                        </span>
-                    </div>
+                <div class="post-item-header">
+                    <h3 class="post-item-title">${post.title}</h3>
+                    <span class="post-item-meta">
+                        작성자: ${ownerName} | ${formattedDate} | 조회수: ${post.views || 0}
+                    </span>
+                </div>
+                <div class="post-item-body">
                     <p class="post-item-content">${post.content}</p>
-                    <div class="post-tags">${tagsHtml}</div>
-                    `;
+                    <img src="${imageUrl}" alt=" " class="post-preview-image">
+                </div>
+                <div class="post-tags">${tagsHtml}</div>
+            `;
                 postListContainer.appendChild(postItem);
             });
+        }
+
+        // 페이지네이션 컨트롤 렌더링 함수
+        function renderPaginationControls(totalPosts, currentPageFromAPI, postsPerPage) {
+            // API 응답에서 받은 실제 현재 페이지를 전역 변수에 동기화합니다.
+            // 이는 API가 요청된 페이지와 다른 페이지를 반환할 가능성에 대비합니다.
+            currentPage = currentPageFromAPI;
+
+            paginationControls.innerHTML = '';
+
+            const totalPages = Math.ceil(totalPosts / postsPerPage);
+
+            // 콘솔 로그 추가: 현재 페이지네이션 상태를 확
+
+            if (totalPages <= 1) {
+                return;
+            }
+
+            // '이전' 버튼
+            const prevButton = document.createElement('button');
+            prevButton.textContent = 'PREVIOUS';
+            prevButton.disabled = currentPage === 1;
+            prevButton.className = 'pagination-button';
+            prevButton.onclick = () => {
+                if (currentPage > 1) {
+                    currentPage--; // 현재 페이지 값을 감소
+                    fetchPosts(); // 업데이트된 currentPage로 게시글 다시 불러오기
+                }
+            };
+            paginationControls.appendChild(prevButton);
+
+            // 페이지 번호 버튼 (중앙에 현재 페이지를 두고 최대 5개 표시)
+            let startPage = Math.max(1, currentPage - 2);
+            let endPage = Math.min(totalPages, currentPage + 2);
+
+            // 페이지 수가 5개 미만일 경우, 전체 페이지를 표시
+            if (totalPages < 5) {
+                startPage = 1;
+                endPage = totalPages;
+            } else {
+                // 현재 페이지가 시작 페이지에 너무 가까울 경우 조정
+                if (currentPage <= 2) {
+                    endPage = 5;
+                    startPage = 1;
+                }
+                // 현재 페이지가 끝 페이지에 너무 가까울 경우 조정
+                else if (currentPage >= totalPages - 1) {
+                    startPage = totalPages - 4;
+                    endPage = totalPages;
+                }
+            }
+
+            for (let i = startPage; i <= endPage; i++) {
+                const pageButton = document.createElement('button');
+                pageButton.textContent = i;
+                pageButton.className = 'pagination-button';
+                if (i === currentPage) {
+                    pageButton.classList.add('active'); // 현재 페이지에 활성 클래스 추가
+                }
+                pageButton.onclick = () => {
+                    currentPage = i; // 클릭된 페이지 번호로 현재 페이지 값 변경
+                    fetchPosts(); // 업데이트된 currentPage로 게시글 다시 불러오기
+                };
+                paginationControls.appendChild(pageButton);
+            }
+
+            // '다음' 버튼
+            const nextButton = document.createElement('button');
+            nextButton.textContent = 'NEXT';
+            nextButton.disabled = currentPage === totalPages;
+            nextButton.className = 'pagination-button';
+            nextButton.onclick = () => {
+                if (currentPage < totalPages) {
+                    currentPage++; // 현재 페이지 값을 증가
+                    fetchPosts(); // 업데이트된 currentPage로 게시글 다시 불러오기
+                }
+            };
+            paginationControls.appendChild(nextButton);
         }
 
         // 백엔드 API에서 게시글을 가져오는 함수
         async function fetchPosts() {
             try {
-                const response = await fetch('/api/blog/articles');
+                // fetch 요청 URL에 `currentPage` 변수를 직접 사용하여 최신 값을 반영합니다.
+                const response = await fetch(`/api/blog/articles?page=${currentPage}&size=${postsPerPage}`);
+
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
-                const posts = await response.json();
-                renderPosts(posts);
+                const data = await response.json();
+
+                // 콘솔 로그 추가: API 응답 데이터를 확인
+                console.log("[Fetch Response] API Response Data:", data);
+
+                // 게시글 렌더링
+                renderPosts(data.items);
+                // 페이지네이션 컨트롤 렌더링 시, API 응답에서 받은 `data.page`를 사용합니다.
+                // 이는 백엔드가 보낸 '실제' 페이지 번호를 기반으로 컨트롤을 그리게 합니다.
+                renderPaginationControls(data.total, data.page, data.size);
             } catch (error) {
                 console.error('게시글을 불러오는 중 오류 발생:', error);
                 postListContainer.innerHTML = '<p style="text-align: center; color: #E966A0;">게시글을 불러오지 못했습니다. 나중에 다시 시도해주세요.</p>';
+                paginationControls.innerHTML = '';
+            }
+        }
+        //popular posts
+        async function fetchPopularPosts() {
+            try {
+                const response = await fetch(`/api/blog/popular-articles?limit=5`); // limit=5로 5개만 요청
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const popularPosts = await response.json();
+
+                popularPostsListContainer.innerHTML = ''; // 기존 "Loading popular posts..." 메시지 지우기
+
+                if (popularPosts.length === 0) {
+                    popularPostsListContainer.innerHTML = '<p style="text-align: center;">아직 인기 게시글이 없습니다.</p>';
+                    return;
+                }
+
+                popularPosts.forEach(post => {
+                    const postLink = document.createElement('a');
+                    postLink.href = `post_detail.html?id=${post.id}`;
+                    postLink.innerHTML = `
+                    <div class=popular-post>${post.title} 
+                    <span>(by ${post.author_username || 'Unknown'} / Views: ${post.views || 0})</span></div>
+                `;
+                    popularPostsListContainer.appendChild(postLink);
+                });
+
+            } catch (error) {
+                console.error('인기 게시글을 불러오는 중 오류 발생:', error);
+                popularPostsListContainer.innerHTML = '<p style="text-align: center;">인기 게시글을 불러오지 못했습니다.</p>';
             }
         }
 
-        // DOM이 완전히 로드되었을 때 이벤트 리스너
+
+        // DOM이 완전히 로드되었을 때 초기화
         document.addEventListener('DOMContentLoaded', async () => {
             const user = await getCurrentUser();
-            renderNavbar(user); // auth.js 함수
-            renderAboutMe(user); // 사용자 세션에 따라 프로필 카드 렌더링
-            fetchPosts(); // 데이터베이스에서 게시글 가져와 렌더링
+            renderNavbar(user);
+            renderAboutMe(user);
+            fetchPosts(); // 페이지 로드 시 첫 게시글 불러오기
+            fetchPopularPosts();
         });
     </script>
 </body>

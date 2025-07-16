@@ -405,7 +405,7 @@
 
             async function initializeForm() {
                 const user = await getCurrentUser();
-                renderNavbar(user);
+                renderNavbar();
 
                 if (!user) {
                     alert('You must be logged in to create or edit a post.');
@@ -420,7 +420,8 @@
                         const response = await fetch(`/api/blog/articles/${postId}`);
                         if (!response.ok) throw new Error('Failed to load post information.');
 
-                        const post = await response.json();
+                        const data = await response.json();
+                        const post = data.post || data.article;
                         
                         if (user.id !== post.owner_id) {
                             alert('You do not have permission to edit this post.');
@@ -466,107 +467,185 @@
             });
 
 
-            form.addEventListener('submit', async (e) => {
-                e.preventDefault();
-                errorEl.innerText = '';
-                errorEl.style.display = 'none';
-                submitBtn.disabled = true;
-                submitBtn.innerText = 'Saving...'; // Changed from '저장 중...'
+            // write_post.html <script> 태그 안의 form.addEventListener('submit', ...) 부분 수정
 
-                const url = isEditMode ? `/api/blog/articles/${postId}` : `/api/blog/articles`;
-                const method = isEditMode ? 'PATCH' : 'POST';
+form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    errorEl.innerText = '';
+    errorEl.style.display = 'none';
+    submitBtn.disabled = true;
+    submitBtn.innerText = 'Saving...';
 
-                const textData = {
-                    title: titleInput.value.trim(),
-                    content: contentInput.value.trim(),
-                    tags: tagsInput.value.trim(), // tags sent as a string
-                };
-                
-                // Frontend validation for required fields
-                if (!textData.title || !textData.content) {
-                    errorEl.innerText = 'Title and content cannot be empty.'; // Changed from '제목과 내용은 비워둘 수 없습니다.'
-                    errorEl.style.display = 'block';
-                    submitBtn.disabled = false;
-                    submitBtn.innerText = 'Submit'; // Changed from '제출'
-                    return;
+    const title = titleInput.value.trim();
+    const content = contentInput.value.trim();
+    const tags = tagsInput.value.trim();
+
+    if (!title || !content) {
+        errorEl.innerText = 'Title and content cannot be empty.';
+        errorEl.style.display = 'block';
+        submitBtn.disabled = false;
+        submitBtn.innerText = 'Submit';
+        return;
+    }
+
+    const formData = new FormData();
+
+    // article_data를 JSON 문자열로 변환하여 FormData에 추가
+    // 백엔드의 @app.patch('/api/blog/articles/{article_id}') 엔드포인트는
+    // article_data: ArticleUpdate 객체를 직접 받지 않고,
+    // Form(...)으로 들어오는 문자열을 ArticleUpdate로 파싱할 것으로 예상됩니다.
+    // 이는 FastAPI의 Form() 매개변수가 Pydantic 모델을 자동으로 파싱해주지 않기 때문입니다.
+    // 따라서 백엔드 @app.patch에서도 Form(..., media_type="application/json") 처럼 선언하거나,
+    // Form(..., default_factory=lambda: ArticleUpdate(...)) 처럼 직접 파싱해야 합니다.
+    // 하지만 현재 백엔드 코드는 article_data: ArticleUpdate 로 직접 받는 것으로 보입니다.
+    // 이 경우 FormData 방식으로는 직접 Pydantic 모델을 보낼 수 없습니다.
+    // 
+    // 백엔드의 @app.patch("/api/blog/articles/{article_id}") 정의가 다음과 같으므로:
+    // async def update_article(
+    //     article_id: int,
+    //     article_data: ArticleUpdate, // <-- Pydantic 모델
+    //     files: List[UploadFile],     // <-- 파일
+    //     ...
+    // ):
+    // FormData로 보내면서 JSON 페이로드를 직접 넣을 수는 없습니다.
+    // 백엔드의 PATCH API가 Body (JSON) + File (multipart)을 동시에 받지 못하는 문제입니다.
+    // FastAPI는 기본적으로 하나의 요청 바디 타입만 지원합니다.
+
+    // 해결책:
+    // 1. **백엔드 PATCH API를 수정**: article_data를 Form(json.dumps 형식으로 보낼 수 있도록)으로 받고, 파일을 따로 받게 하거나
+    // 2. **프론트엔드 로직을 수정**: 텍스트 데이터와 파일을 별도의 요청으로 보냅니다 (기존 `write_post.html`의 두 단계 방식).
+    //    이 경우, 수정 모드에서는 먼저 게시글 텍스트를 PATCH하고, 그 응답이 성공하면 이미지를 POST /upload-images 하는 방식이 되어야 합니다.
+
+    // 현재 백엔드 PATCH API가 ArticleUpdate와 List[UploadFile]을 함께 기대하는 방식이라면,
+    // 이는 FastAPI에서 일반적인 방식은 아닙니다 (하나의 요청 바디에 JSON과 FormData를 동시에 받을 수 없기 때문).
+    // 따라서 백엔드 PATCH API의 정의가 잘못되었거나, 프론트엔드에서 두 번의 요청으로 분리해야 합니다.
+
+    // 님의 백엔드 POST /api/blog/articles (생성) 엔드포인트는 ArticleCreate 객체만 받으므로,
+    // 파일 업로드와 분리하는 것이 현재 백엔드 API 구조에 더 적합해 보입니다.
+
+    // --------------------------------------------------------------------------------
+    // **가장 권장하는 해결책: 기존 프론트엔드 로직(텍스트 따로, 이미지 따로)을 유지하되,**
+    // **백엔드 PATCH 엔드포인트에서 `files: List[UploadFile]` 부분을 제거합니다.**
+    // **그리고 이미지 업로드는 `POST /api/blog/articles/{article_id}/upload-images`를 사용합니다.**
+    // --------------------------------------------------------------------------------
+
+    // 백엔드 @app.patch("/api/blog/articles/{article_id}") 엔드포인트에서
+    // files: List[UploadFile]을 제거해야 합니다.
+    // 그리고 프론트엔드에서는 텍스트 PATCH 요청과 파일 POST 요청을 분리해야 합니다.
+
+    // 현재 백엔드 코드(`main.py`):
+    // @app.patch("/api/blog/articles/{article_id}", response_model = BlogArticle)
+    // async def update_article(
+    //     article_id: int,
+    //     article_data: ArticleUpdate, // <-- 문제: Body와 File을 동시에 받으려 함
+    //     files: List[UploadFile],     // <-- 이 부분을 제거해야 합니다.
+    //     session: Annotated[AsyncSession, Depends(get_session)],
+    //     x_user_id: Annotated[int, Header(alias="X-User-Id")]
+    // ):
+
+    // 백엔드 PATCH 엔드포인트를 다음과 같이 수정하는 것을 강력히 권장합니다:
+    // @app.patch("/api/blog/articles/{article_id}", response_model = BlogArticle)
+    // async def update_article(
+    //     article_id: int,
+    //     article_data: ArticleUpdate, # 이제 이 부분만 Body로 받습니다.
+    //     session: Annotated[AsyncSession, Depends(get_session)],
+    //     x_user_id: Annotated[int, Header(alias="X-User-Id")]
+    // ):
+    //     # 기존 텍스트 데이터 업데이트 로직은 그대로 유지
+
+    // 이렇게 백엔드를 수정하면, 프론트엔드 write_post.html의 원래 두 단계 제출 로직을 사용할 수 있습니다.
+
+    // --------------------------------------------------------------------------------
+    // 백엔드를 위와 같이 수정했다는 가정 하에, write_post.html의 submit 이벤트 리스너는
+    // 이전 상태 (텍스트 데이터와 이미지 파일 업로드 분리)로 돌아가야 합니다.
+    // --------------------------------------------------------------------------------
+
+    const url = isEditMode ? `/api/blog/articles/${postId}` : `/api/blog/articles`;
+    const method = isEditMode ? 'PATCH' : 'POST'; // 텍스트 데이터 전송을 위한 HTTP 메서드
+
+    const textData = {
+        title: title,
+        content: content,
+        tags: tags,
+    };
+
+    let currentPostId = postId;
+
+    try {
+        // Step 1: 텍스트 데이터 (제목, 내용, 태그) 전송 (JSON 형식)
+        const textResponse = await fetch(url, {
+            method: method,
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(textData),
+            credentials: 'include'
+        });
+
+        if (!textResponse.ok) {
+            const errorData = await textResponse.json();
+            let displayErrorMessage = 'Failed to save post (text data).'; 
+            if (errorData && errorData.detail) {
+                if (typeof errorData.detail === 'string') {
+                    displayErrorMessage = errorData.detail;
+                } else if (Array.isArray(errorData.detail)) {
+                    displayErrorMessage = errorData.detail.map(err => {
+                        const loc = err.loc ? err.loc.join('.') : 'unknown location';
+                        return `${loc}: ${err.msg}`;
+                    }).join('; ');
+                } else if (typeof errorData.detail === 'object' && errorData.detail.message) {
+                    displayErrorMessage = `${errorData.detail.message}: ${JSON.stringify(errorData.detail.errors || '')}`;
+                } else {
+                    displayErrorMessage = JSON.stringify(errorData.detail);
                 }
+            }
+            throw new Error(displayErrorMessage);
+        }
 
-                let currentPostId = postId; 
+        // 새 게시글인 경우, 저장된 게시글의 ID를 받아와 이미지 업로드에 사용
+        if (!isEditMode) {
+            const savedPost = await textResponse.json();
+            currentPostId = savedPost.id;
+        }
 
-                try {
-                    // Step 1: Send text data (title, content, tags)
-                    const textResponse = await fetch(url, {
-                        method: method,
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(textData),
-                        credentials: 'include'
-                    });
+        // Step 2: 이미지 파일(들) 업로드 (파일이 존재하고 게시글 ID가 있는 경우)
+        const imageFiles = imageInput.files;
+        if (imageFiles.length > 0 && currentPostId) {
+            const formData = new FormData();
+            for (const file of imageFiles) {
+                formData.append("files", file); // 백엔드의 'files: List[UploadFile]'와 매칭
+            }
 
-                    if (!textResponse.ok) {
-                        const errorData = await textResponse.json();
-                        let displayErrorMessage = 'Failed to save post.'; // Changed from '게시글 저장에 실패했습니다.'
-                        if (errorData && errorData.detail) {
-                            if (typeof errorData.detail === 'string') {
-                                displayErrorMessage = errorData.detail;
-                            } else if (Array.isArray(errorData.detail)) {
-                                displayErrorMessage = errorData.detail.map(err => {
-                                    const loc = err.loc ? err.loc.join('.') : 'unknown location'; // Changed from '알 수 없는 위치'
-                                    return `${loc}: ${err.msg}`;
-                                }).join('; ');
-                            } else if (typeof errorData.detail === 'object' && errorData.detail.message) {
-                                displayErrorMessage = `${errorData.detail.message}: ${JSON.stringify(errorData.detail.errors || '')}`;
-                            } else {
-                                displayErrorMessage = JSON.stringify(errorData.detail);
-                            }
-                        }
-                        throw new Error(displayErrorMessage);
-                    }
-
-                    if (!isEditMode) { 
-                        const savedPost = await textResponse.json();
-                        currentPostId = savedPost.id;
-                    }
-
-                    // Step 2: Upload image file(s) (if files exist and post ID is available)
-                    const imageFiles = imageInput.files;
-                    if (imageFiles.length > 0 && currentPostId) {
-                        const formData = new FormData();
-                        for (const file of imageFiles) {
-                            formData.append("files", file);
-                        }
-
-                        const imageUploadUrl = `/api/blog/articles/${currentPostId}/upload-images`;
-                        const imageResponse = await fetch(imageUploadUrl, {
-                            method: 'POST',
-                            body: formData,
-                            credentials: 'include'
-                        });
-
-                        if (!imageResponse.ok) {
-                            const errorData = await imageResponse.json();
-                            let imageErrorMessage = 'Image upload failed.'; // Changed from '이미지 업로드에 실패했습니다.'
-                            if (errorData && errorData.detail) {
-                                imageErrorMessage += `: ${typeof errorData.detail === 'string' ? errorData.detail : JSON.stringify(errorData.detail)}`;
-                            }
-                            // Notify user that post was saved but image upload failed
-                            alert(`Post saved successfully, but ${imageErrorMessage}`); // Changed from '게시글은 성공적으로 저장되었으나'
-                        } else {
-                            console.log("Image(s) uploaded successfully!");
-                        }
-                    }
-
-                    alert('Saved successfully!'); // Changed from '성공적으로 저장되었습니다.'
-                    window.location.href = `/blog_detail.html?id=${currentPostId}`; 
-
-                } catch (error) {
-                    errorEl.innerText = `Error: ${error.message}`; // Changed from '오류:'
-                    errorEl.style.display = 'block';
-                    console.error("Post submission error:", error); // Changed from '게시글 제출 오류:'
-                } finally {
-                    submitBtn.disabled = false;
-                    submitBtn.innerText = 'Submit'; // Changed from '제출'
-                }
+            const imageUploadUrl = `/api/blog/articles/${currentPostId}/upload-images`;
+            const imageResponse = await fetch(imageUploadUrl, {
+                method: 'POST', // 이미지 업로드는 항상 POST
+                body: formData, // FormData는 Content-Type을 자동으로 설정
+                credentials: 'include'
             });
+
+            if (!imageResponse.ok) {
+                const errorData = await imageResponse.json();
+                let imageErrorMessage = 'Image upload failed.';
+                if (errorData && errorData.detail) {
+                    imageErrorMessage += `: ${typeof errorData.detail === 'string' ? errorData.detail : JSON.stringify(errorData.detail)}`;
+                }
+                // 게시글은 저장되었지만 이미지 업로드 실패 알림
+                alert(`Post saved successfully, but ${imageErrorMessage}`); 
+            } else {
+                console.log("Image(s) uploaded successfully!");
+            }
+        }
+
+        alert('Saved successfully!');
+        window.location.href = `/post_detail.html?id=${currentPostId}`;
+
+    } catch (error) {
+        errorEl.innerText = `Error: ${error.message}`;
+        errorEl.style.display = 'block';
+        console.error("Post submission error:", error);
+    } finally {
+        submitBtn.disabled = false;
+        submitBtn.innerText = 'Submit';
+    }
+});
 
             // Call initialization function
             initializeForm(); 

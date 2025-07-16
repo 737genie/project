@@ -350,106 +350,90 @@
     </div>
 
     <script src="/js/auth.js"></script>
-    <script>
-        document.addEventListener('DOMContentLoaded', async () => {
-            renderNavbar(); // 네비게이션 바 초기 렌더링 (로그인 상태에 따라 달라짐)
+<script>
+    document.addEventListener('DOMContentLoaded', async () => {
+        renderNavbar();
 
-            const profileBox = document.getElementById('user-profile-box');
+        const profileBox = document.getElementById('user-profile-box');
 
-            // URL에서 user_id 추출
-            // 예: /profile/123 -> user_id = 123
-            // 또는 /api/auth/me 로 접근하여 현재 로그인된 사용자 정보 가져오기 (권장)
-            
-            let user_id_from_url = null;
-            const pathSegments = window.location.pathname.split('/');
-            // /profile/123 또는 /api/users/123 같은 URL에서 ID를 추출
-            // /profile/me 같은 경우를 처리하려면 별도의 로직 필요
-            if (pathSegments.length > 2) {
-                const lastSegment = pathSegments[pathSegments.length - 1];
-                if (!isNaN(lastSegment) && lastSegment !== "") { // 숫자인지 확인
-                    user_id_from_url = parseInt(lastSegment);
-                } else if (lastSegment === "me" && pathSegments[pathSegments.length - 2] === "profile") {
-                     // /profile/me 경로라면 getCurrentUser를 통해 본인 프로필을 가져오도록 처리
-                     // 이 경우 user_id_from_url을 null로 유지하여 아래 if문에서 getCurrentUser()를 호출하도록 유도
-                }
+        let userIdFromUrl = null;
+        const pathSegments = window.location.pathname.split('/');
+        if (pathSegments.length > 2) {
+            const lastSegment = pathSegments[pathSegments.length - 1];
+            if (!isNaN(lastSegment) && lastSegment !== "") {
+                userIdFromUrl = parseInt(lastSegment);
+            } else if (lastSegment === "me" && pathSegments[pathSegments.length - 2] === "profile") {
+                // Keep userIdFromUrl null to trigger getCurrentUser()
             }
+        }
 
-            let user = null;
-            if (user_id_from_url) {
-                // 특정 user_id의 프로필을 가져옴
-                try {
-                    const response = await fetch(`/api/users/${user_id_from_url}`);
-                    if (response.ok) {
-                        user = await response.json();
-                    } else {
-                        const errorData = await response.json();
-                        profileBox.innerHTML = `<p style="color: red; text-align: center;">오류: ${errorData.detail || '프로필을 불러오지 못했습니다.'}</p>`;
-                        console.error('Failed to fetch user profile:', errorData);
-                    }
-                } catch (error) {
-                    profileBox.innerHTML = `<p style="color: red; text-align: center;">네트워크 오류: ${error.message}</p>`;
-                    console.error('Network error fetching user profile:', error);
+        let user = null;
+        if (userIdFromUrl) {
+            try {
+                const response = await fetch(`/api/users/${userIdFromUrl}`);
+                if (response.ok) {
+                    user = await response.json();
+                } else {
+                    const errorData = await response.json();
+                    profileBox.innerHTML = `<p style="color: red; text-align: center;">Error: ${errorData.detail || 'Failed to load profile.'}</p>`;
+                    console.error('Failed to fetch user profile:', errorData);
                 }
-            } else {
-                // user_id가 없거나 'me'인 경우, 현재 로그인된 사용자 프로필을 가져옴
-                // 이 함수는 auth.js에 정의되어 있을 것으로 예상
-                user = await getCurrentUser(); 
-                if (!user) {
-                    profileBox.innerHTML = `
-                        <h2 class="profile-title">로그인 필요</h2>
-                        <p style="text-align: center; color: #feffa9;">이 페이지를 보려면 로그인이 필요합니다.</p>
-                        <div class="edit" style="margin-top: 30px;">
-                            <a href="login.html" style="width: auto; padding: 10px 25px;">Log in</a>
-                        </div>
-                    `;
-                    return; // 로그인하지 않은 경우 여기서 함수 종료
-                }
+            } catch (error) {
+                profileBox.innerHTML = `<p style="color: red; text-align: center;">Network error: ${error.message}</p>`;
+                console.error('Network error fetching user profile:', error);
             }
-
-            if (user) {
-                // 사용자 정보가 성공적으로 로드된 경우
+        } else {
+            user = await getCurrentUser(); 
+            if (!user) {
                 profileBox.innerHTML = `
-                    <h2 class="profile-title">${user.username || user.full_name || '사용자'}'s Profile</h2>
-                    <div class="profile-item profile-image-container">
-                        ${user.profile_image_filename ? 
-                            `<img src="/static/profiles/${user.profile_image_filename}" alt="프로필 이미지" class="profile-image">` : 
-                            `<div class="profile-image profile-image-placeholder" style="background-color: rgba(255, 255, 255, 0.15); display: flex; justify-content: center; align-items: center; color: rgba(255, 255, 255, 0.6); font-size: 0.9em;">No Image</div>`
-                        }
-                    </div>
-                    <div class="profile-item">
-                        <div class="profile-label">NAME:</div>
-                        <div class="profile-value">${user.username || user.full_name || '정보 없음'}</div>
-                    </div>
-                    <div class="profile-item">
-                        <div class="profile-label">BIO:</div>
-                        <div class="profile-value">${user.bio || ''}</div>
-                    </div>
-                    <div class="profile-item">
-                        <div class="profile-label">E-MAIL:</div>
-                        <div class="profile-value">${user.email || '정보 없음'}</div>
-                    </div>
-                    <div class="edit">
-                        <a href="edit_profile.html">Edit</a>
+                    <h2 class="profile-title">Login Required</h2>
+                    <p style="text-align: center; color: #feffa9;">Login is required to view this page.</p>
+                    <div class="edit" style="margin-top: 30px;">
+                        <a href="login.html" style="width: auto; padding: 10px 25px;">Log in</a>
                     </div>
                 `;
-                 // 로그인된 사용자와 현재 보고 있는 프로필이 동일인물일 때만 수정 버튼을 활성화
-                const currentUser = await getCurrentUser();
-                if (currentUser && currentUser.id === user.id) {
-                    // edit_profile.html이 실제 수정 페이지라고 가정
-                    // user.id를 쿼리 파라미터로 넘겨줄 필요는 없지만, 일관성을 위해 추가 가능
-                    profileBox.querySelector('.edit a').href = `edit_profile.html?user_id=${user.id}`;
-                } else {
-                    // 다른 사람의 프로필을 볼 때는 수정 버튼을 숨기거나 비활성화
-                    const editButton = profileBox.querySelector('.edit');
-                    if (editButton) editButton.style.display = 'none';
-                }
-
-            } else {
-                // 사용자 정보를 불러오지 못한 최종 경우
-                profileBox.innerHTML = `<p style="color: red; text-align: center;">사용자 프로필을 찾을 수 없습니다.</p>`;
+                return;
             }
-        });
-    </script>
+        }
+
+        if (user) {
+            profileBox.innerHTML = `
+                <h2 class="profile-title">${user.username || user.full_name || 'User'}'s Profile</h2>
+                <div class="profile-item profile-image-container">
+                    ${user.profile_image_filename ? 
+                        `<img src="/static/profiles/${user.profile_image_filename}" alt="Profile Image" class="profile-image">` : 
+                        `<div class="profile-image profile-image-placeholder" style="background-color: rgba(255, 255, 255, 0.15); display: flex; justify-content: center; align-items: center; color: rgba(255, 255, 255, 0.6); font-size: 0.9em;">No Image</div>`
+                    }
+                </div>
+                <div class="profile-item">
+                    <div class="profile-label">NAME:</div>
+                    <div class="profile-value">${user.username || user.full_name || 'No information'}</div>
+                </div>
+                <div class="profile-item">
+                    <div class="profile-label">BIO:</div>
+                    <div class="profile-value">${user.bio || ''}</div>
+                </div>
+                <div class="profile-item">
+                    <div class="profile-label">E-MAIL:</div>
+                    <div class="profile-value">${user.email || 'No information'}</div>
+                </div>
+                <div class="edit">
+                    <a href="edit_profile.html">Edit</a>
+                </div>
+            `;
+            const currentUser = await getCurrentUser();
+            if (currentUser && currentUser.id === user.id) {
+                profileBox.querySelector('.edit a').href = `edit_profile.html?user_id=${user.id}`;
+            } else {
+                const editButton = profileBox.querySelector('.edit');
+                if (editButton) editButton.style.display = 'none';
+            }
+
+        } else {
+            profileBox.innerHTML = `<p style="color: red; text-align: center;">User profile not found.</p>`;
+        }
+    });
+</script>
 
 </body>
 

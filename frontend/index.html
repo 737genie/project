@@ -147,6 +147,20 @@
             font-size: 1.2em;
             /* 제목 폰트 크기 조정 */
         }
+        .contexts h1 {
+            text-align: center;
+            margin-bottom: 10px;
+            /* 제목과 카드 사이 간격 */
+            color: #2B2730;
+        }
+
+        /* My Profile 링크 스타일 */
+        .contexts h1 a {
+            text-decoration: none;
+            color: #2B2730;
+            font-size: 1.2em;
+            /* 제목 폰트 크기 조정 */
+        }
 
         .board {
             width: 70%;
@@ -380,7 +394,38 @@
             color: #E966A0;
             font-size: 0.9em;
         }
+        .popular-post {
+            height: 40px;
+            align-items: center;
+            margin-top: 5px;
+            background-color: #2B2730;
+            color:#FEFFA9;
+            padding: 5px;
+            border-radius: 10px;
+            display: flex;
+            justify-content: space-around;
+        }
 
+        .popular-posts-list a { /* 추가: 인기 포스트 링크 스타일 */
+            text-decoration: none;
+            color: #2B2730;
+            display: block;
+            margin-bottom: 5px;
+            padding: 3px 0;
+            transition: color 0.2s;
+        }
+
+        .popular-post:hover {
+            color: #E966A0;
+            background-color: #333;
+        }
+
+        .popular-post span { /* 추가: 작성자/조회수 텍스트 스타일 */
+            font-size: 0.9em;
+            color: #555;
+            margin-left: 5px;
+        }
+        
         /* --- 반응형 레이아웃 (모바일) --- */
         @media (max-width: 768px) {
 
@@ -486,6 +531,9 @@
             .profile-bio {
                 -webkit-line-clamp: 4; /* 모바일에서 바이오가 더 많은 줄을 표시하도록 허용 (원할 경우) */
             }
+            .popular-posts-list {
+                margin-top: 0;
+            }
         }
     </style>
 </head>
@@ -503,13 +551,17 @@
 
     <main class="content">
         <div class="content2">
-            <div class="contexts">
+            <div class="contexts" id="cont1">
                 <h3 class="margin10"><a style="text-decoration: none; color: #2B2730;" href="profile.html">My
                         Profile</a></h3>
                 <div id="about-me-card"></div>
             </div>
             <div class="contexts">
-                <h3 class="margin10">Popular Posts</h3>
+                <h1 class="margin10" id="popular-posts-title">Popular Posts</h1>
+                <div class="popular-posts-list" id="popular-posts-list-container"
+                    style="color: #2B2730; width: 100%; text-align: left; margin-top:20; padding: 20px;">
+                    <p style="text-align: center;">Loading popular posts...</p>
+                </div>
             </div>
         </div>
         <div class="board">
@@ -531,10 +583,19 @@
     <script src="/js/auth.js"></script>
     <script>
         const aboutMeCard = document.getElementById('about-me-card');
-
+        const popularPostsListContainer = document.getElementById('popular-posts-list-container'); // 추가
+        
+        
+        const cont1 = document.getElementById('cont1');
         function renderAboutMe(user) {
             if (!user) {
-                aboutMeCard.style.display = 'none';
+                cont1.innerHTML = `
+                    <div class="contexts" style="background-color: #2B2730; flex-grow:1;">
+                        <h3 class="margin10"><a style="text-decoration: none; color: #2B2730;" href="profile.html">My
+                                Profile</a></h3>
+                        <div id="about-me-card"><h2 style="color:#feffa9; position: relative; top: -25px;">Members Only</h2></div>
+                    </div>
+                `;
                 return;
             }
 
@@ -556,10 +617,57 @@
             `
         };
 
+        //popular posts
+        async function fetchPopularPosts() {
+            try {
+                const response = await fetch(`/api/blog/popular-articles?limit=5`); // limit=5로 5개만 요청
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const popularPosts = await response.json();
+
+                popularPostsListContainer.innerHTML = ''; // 기존 "Loading popular posts..." 메시지 지우기
+
+                if (popularPosts.length === 0) {
+                    popularPostsListContainer.innerHTML = '<p style="text-align: center;">아직 인기 게시글이 없습니다.</p>';
+                    return;
+                }
+
+                popularPosts.forEach(post => {
+                    const postLink = document.createElement('a');
+                    postLink.href = `post_detail.html?id=${post.id}`;
+                    postLink.innerHTML = `
+                        <div class=popular-post>${post.title} 
+                        <span>(by ${post.author_username || 'Unknown'} / Views: ${post.views || 0})</span></div>
+                    `;
+                    popularPostsListContainer.appendChild(postLink);
+                });
+
+            } catch (error) {
+                console.error('인기 게시글을 불러오는 중 오류 발생:', error);
+                popularPostsListContainer.innerHTML = '<p style="text-align: center;">인기 게시글을 불러오지 못했습니다.</p>';
+            }
+        }
+
+    //     //제목 색 변화
+    //     const popularPostsTitle = document.getElementById('popular-posts-title');
+    //     function startColorAnimation() {
+    //     const colors = ['#f9f871','#2B2730']; // 변경할 색상 배열
+    //     let colorIndex = 0;
+
+    //     setInterval(() => {
+    //         popularPostsTitle.style.color = colors[colorIndex];
+    //         colorIndex = (colorIndex + 1) % colors.length; // 다음 색상으로 이동
+    //     }, 800); // 1000ms = 1초 간격
+    // }
+
+
         document.addEventListener('DOMContentLoaded', async () => {
             const user = await getCurrentUser();
             renderNavbar(user); // auth.js의 함수
             renderAboutMe(user);
+            fetchPopularPosts();
+            // startColorAnimation();
         });
     </script>
 
