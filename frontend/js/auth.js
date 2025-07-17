@@ -38,6 +38,7 @@ async function renderNavbar() {
     if (user) { // 로그인된 경우
         authLinks.innerHTML = `
             <span class="navbar-text">Welcome, <a href="profile.html" style="cursor: pointer;">${user.username}</a> !</span>
+            <span><a href="blog.html" class=>Blog</a></span>
             <a href="#" id="logout-link" class="logout-button-link">Log Out</a>`;
         
         const logoutLink = document.getElementById('logout-link');

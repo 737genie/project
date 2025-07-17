@@ -417,11 +417,11 @@
 
                 if (isEditMode) {
                     try {
-                        const response = await fetch(`/api/blog/articles/${postId}`);
+                        const response = await fetch(`/api/board/posts/${postId}`);
                         if (!response.ok) throw new Error('Failed to load post information.');
 
                         const data = await response.json();
-                        const post = data.post || data.article;
+                        const post = data.post || data.post;
                         
                         if (user.id !== post.owner_id) {
                             alert('You do not have permission to edit this post.');
@@ -490,20 +490,20 @@ form.addEventListener('submit', async (e) => {
 
     const formData = new FormData();
 
-    // article_data를 JSON 문자열로 변환하여 FormData에 추가
-    // 백엔드의 @app.patch('/api/blog/articles/{article_id}') 엔드포인트는
-    // article_data: ArticleUpdate 객체를 직접 받지 않고,
+    // post_data를 JSON 문자열로 변환하여 FormData에 추가
+    // 백엔드의 @app.patch('/api/board/posts/{post_id}') 엔드포인트는
+    // post_data: ArticleUpdate 객체를 직접 받지 않고,
     // Form(...)으로 들어오는 문자열을 ArticleUpdate로 파싱할 것으로 예상됩니다.
     // 이는 FastAPI의 Form() 매개변수가 Pydantic 모델을 자동으로 파싱해주지 않기 때문입니다.
     // 따라서 백엔드 @app.patch에서도 Form(..., media_type="application/json") 처럼 선언하거나,
     // Form(..., default_factory=lambda: ArticleUpdate(...)) 처럼 직접 파싱해야 합니다.
-    // 하지만 현재 백엔드 코드는 article_data: ArticleUpdate 로 직접 받는 것으로 보입니다.
+    // 하지만 현재 백엔드 코드는 post_data: ArticleUpdate 로 직접 받는 것으로 보입니다.
     // 이 경우 FormData 방식으로는 직접 Pydantic 모델을 보낼 수 없습니다.
     // 
-    // 백엔드의 @app.patch("/api/blog/articles/{article_id}") 정의가 다음과 같으므로:
-    // async def update_article(
-    //     article_id: int,
-    //     article_data: ArticleUpdate, // <-- Pydantic 모델
+    // 백엔드의 @app.patch("/api/board/posts/{post_id}") 정의가 다음과 같으므로:
+    // async def update_post(
+    //     post_id: int,
+    //     post_data: ArticleUpdate, // <-- Pydantic 모델
     //     files: List[UploadFile],     // <-- 파일
     //     ...
     // ):
@@ -512,7 +512,7 @@ form.addEventListener('submit', async (e) => {
     // FastAPI는 기본적으로 하나의 요청 바디 타입만 지원합니다.
 
     // 해결책:
-    // 1. **백엔드 PATCH API를 수정**: article_data를 Form(json.dumps 형식으로 보낼 수 있도록)으로 받고, 파일을 따로 받게 하거나
+    // 1. **백엔드 PATCH API를 수정**: post_data를 Form(json.dumps 형식으로 보낼 수 있도록)으로 받고, 파일을 따로 받게 하거나
     // 2. **프론트엔드 로직을 수정**: 텍스트 데이터와 파일을 별도의 요청으로 보냅니다 (기존 `write_post.html`의 두 단계 방식).
     //    이 경우, 수정 모드에서는 먼저 게시글 텍스트를 PATCH하고, 그 응답이 성공하면 이미지를 POST /upload-images 하는 방식이 되어야 합니다.
 
@@ -520,34 +520,34 @@ form.addEventListener('submit', async (e) => {
     // 이는 FastAPI에서 일반적인 방식은 아닙니다 (하나의 요청 바디에 JSON과 FormData를 동시에 받을 수 없기 때문).
     // 따라서 백엔드 PATCH API의 정의가 잘못되었거나, 프론트엔드에서 두 번의 요청으로 분리해야 합니다.
 
-    // 님의 백엔드 POST /api/blog/articles (생성) 엔드포인트는 ArticleCreate 객체만 받으므로,
+    // 님의 백엔드 POST /api/board/posts (생성) 엔드포인트는 ArticleCreate 객체만 받으므로,
     // 파일 업로드와 분리하는 것이 현재 백엔드 API 구조에 더 적합해 보입니다.
 
     // --------------------------------------------------------------------------------
     // **가장 권장하는 해결책: 기존 프론트엔드 로직(텍스트 따로, 이미지 따로)을 유지하되,**
     // **백엔드 PATCH 엔드포인트에서 `files: List[UploadFile]` 부분을 제거합니다.**
-    // **그리고 이미지 업로드는 `POST /api/blog/articles/{article_id}/upload-images`를 사용합니다.**
+    // **그리고 이미지 업로드는 `POST /api/board/posts/{post_id}/upload-images`를 사용합니다.**
     // --------------------------------------------------------------------------------
 
-    // 백엔드 @app.patch("/api/blog/articles/{article_id}") 엔드포인트에서
+    // 백엔드 @app.patch("/api/board/posts/{post_id}") 엔드포인트에서
     // files: List[UploadFile]을 제거해야 합니다.
     // 그리고 프론트엔드에서는 텍스트 PATCH 요청과 파일 POST 요청을 분리해야 합니다.
 
     // 현재 백엔드 코드(`main.py`):
-    // @app.patch("/api/blog/articles/{article_id}", response_model = BlogArticle)
-    // async def update_article(
-    //     article_id: int,
-    //     article_data: ArticleUpdate, // <-- 문제: Body와 File을 동시에 받으려 함
+    // @app.patch("/api/board/posts/{post_id}", response_model = BlogArticle)
+    // async def update_post(
+    //     post_id: int,
+    //     post_data: ArticleUpdate, // <-- 문제: Body와 File을 동시에 받으려 함
     //     files: List[UploadFile],     // <-- 이 부분을 제거해야 합니다.
     //     session: Annotated[AsyncSession, Depends(get_session)],
     //     x_user_id: Annotated[int, Header(alias="X-User-Id")]
     // ):
 
     // 백엔드 PATCH 엔드포인트를 다음과 같이 수정하는 것을 강력히 권장합니다:
-    // @app.patch("/api/blog/articles/{article_id}", response_model = BlogArticle)
-    // async def update_article(
-    //     article_id: int,
-    //     article_data: ArticleUpdate, # 이제 이 부분만 Body로 받습니다.
+    // @app.patch("/api/board/posts/{post_id}", response_model = BlogArticle)
+    // async def update_post(
+    //     post_id: int,
+    //     post_data: ArticleUpdate, # 이제 이 부분만 Body로 받습니다.
     //     session: Annotated[AsyncSession, Depends(get_session)],
     //     x_user_id: Annotated[int, Header(alias="X-User-Id")]
     // ):
@@ -560,7 +560,7 @@ form.addEventListener('submit', async (e) => {
     // 이전 상태 (텍스트 데이터와 이미지 파일 업로드 분리)로 돌아가야 합니다.
     // --------------------------------------------------------------------------------
 
-    const url = isEditMode ? `/api/blog/articles/${postId}` : `/api/blog/articles`;
+    const url = isEditMode ? `/api/board/posts/${postId}` : `/api/board/posts`;
     const method = isEditMode ? 'PATCH' : 'POST'; // 텍스트 데이터 전송을 위한 HTTP 메서드
 
     const textData = {
@@ -614,7 +614,7 @@ form.addEventListener('submit', async (e) => {
                 formData.append("files", file); // 백엔드의 'files: List[UploadFile]'와 매칭
             }
 
-            const imageUploadUrl = `/api/blog/articles/${currentPostId}/upload-images`;
+            const imageUploadUrl = `/api/board/posts/${currentPostId}/upload-images`;
             const imageResponse = await fetch(imageUploadUrl, {
                 method: 'POST', // 이미지 업로드는 항상 POST
                 body: formData, // FormData는 Content-Type을 자동으로 설정

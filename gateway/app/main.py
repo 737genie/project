@@ -8,6 +8,7 @@ app = FastAPI(title="API Gateway")
 
 USER_SERVICE_URL = os.getenv("USER_SERVICE_URL")
 BLOG_SERVICE_URL = os.getenv("BLOG_SERVICE_URL")
+BOARD_SERVICE_URL = os.getenv("BOARD_SERVICE_URL")
 
 app.add_middleware(AuthMiddleware)
 
@@ -30,6 +31,8 @@ async def reverse_proxy(request:Request):
         base_url = USER_SERVICE_URL
     elif path.startswith("/api/blog"):
         base_url = BLOG_SERVICE_URL
+    elif path.startswith("/api/board"):
+        base_url = BOARD_SERVICE_URL
     else:
         raise HTTPException(status_code=404, detail="Endpoint not found")
     

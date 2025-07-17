@@ -1,0 +1,9 @@
+fastapi
+uvicorn
+sqlmodel
+sqlalchemy[asyncio]
+asyncmy
+python-dotenv
+python-multipart
+redis
+httpx

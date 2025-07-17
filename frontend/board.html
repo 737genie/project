@@ -1003,7 +1003,7 @@
         async function fetchPosts() {
             try {
                 // fetch 요청 URL에 `currentPage` 변수를 직접 사용하여 최신 값을 반영합니다.
-                const response = await fetch(`/api/blog/articles?page=${currentPage}&size=${postsPerPage}`);
+                const response = await fetch(`/api/board/posts?page=${currentPage}&size=${postsPerPage}`);
 
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
@@ -1027,7 +1027,7 @@
         //popular posts
         async function fetchPopularPosts() {
             try {
-                const response = await fetch(`/api/blog/popular-articles?limit=5`); // limit=5로 5개만 요청
+                const response = await fetch(`/api/board/popular-posts?limit=5`); // limit=5로 5개만 요청
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }

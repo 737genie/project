@@ -343,7 +343,7 @@
             color: #feffa9;
         }
 
-        #article-detail-container {
+        #post-detail-container {
             width: 100%;
             background-color: #2B2730;
             border-radius: 10px;
@@ -354,14 +354,14 @@
             flex-grow: 1;
         }
 
-        .article-header h2 {
+        .post-header h2 {
             color: #feffa9;
             font-size: 2em;
             margin-bottom: 10px;
             text-align: center;
         }
 
-        .article-meta {
+        .post-meta {
             color: rgba(233, 102, 160, 0.7);
             font-size: 0.95em;
             text-align: center;
@@ -370,7 +370,7 @@
             padding-bottom: 10px;
         }
 
-        .article-tags {
+        .post-tags {
             margin-top: 10px;
             margin-bottom: 20px;
             font-size: 0.85em;
@@ -386,7 +386,7 @@
             display: inline-block;
         }
 
-        .article-content {
+        .post-content {
             color: #C75185;
             font-size: 1.1em;
             line-height: 1.8;
@@ -395,7 +395,7 @@
             text-align: left;
         }
 
-        .article-image {
+        .post-image {
             max-width: 100%;
             height: auto;
             border-radius: 8px;
@@ -407,7 +407,7 @@
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
         }
 
-        .article-actions {
+        .post-actions {
             display: flex;
             justify-content: center;
             gap: 15px;
@@ -565,32 +565,32 @@
                 text-align: center;
             }
 
-            #article-detail-container {
+            #post-detail-container {
                 padding: 15px 20px;
             }
 
-            .article-detail-container {
+            .post-detail-container {
                 height: 90%;
             }
 
-            .article-header h2 {
+            .post-header h2 {
                 font-size: 1.5em;
             }
 
-            .article-meta {
+            .post-meta {
                 font-size: 0.9em;
             }
 
-            .article-content {
+            .post-content {
                 font-size: 1em;
             }
 
-            .article-image {
+            .post-image {
                 margin-top: 10px;
                 margin-bottom: 10px;
             }
 
-            .article-actions {
+            .post-actions {
                 flex-direction: column;
                 gap: 10px;
             }
@@ -630,11 +630,11 @@
                 </div>
             </div>
 
-            <div id="article-detail-container" class="article-detail-container">
+            <div id="post-detail-container" class="post-detail-container">
                 <p style="text-align: center; color: #feffa9;">Loading post...</p>
             </div>
 
-            <div class="article-actions">
+            <div class="post-actions">
                 <a href="edit_post.html?id=" class="action-button edit-button" id="edit-post-button"
                     style="display: none;">Edit</a>
                 <button class="action-button delete-button" id="delete-post-button"
@@ -686,21 +686,21 @@
 
         async function fetchArticleDetails() {
             const urlParams = new URLSearchParams(window.location.search);
-            const articleId = urlParams.get('id');
-            const articleDetailContainer = document.getElementById('article-detail-container');
+            const postId = urlParams.get('id');
+            const postDetailContainer = document.getElementById('post-detail-container');
             const editButton = document.getElementById('edit-post-button');
             const deleteButton = document.getElementById('delete-post-button');
 
-            if (!articleId) {
-                articleDetailContainer.innerHTML = '<p style="text-align: center; color: #E966A0;">No article ID provided.</p>';
+            if (!postId) {
+                postDetailContainer.innerHTML = '<p style="text-align: center; color: #E966A0;">No post ID provided.</p>';
                 return;
             }
 
             try {
-                const response = await fetch(`/api/blog/articles/${articleId}`);
+                const response = await fetch(`/api/board/posts/${postId}`);
                 if (!response.ok) {
                     if (response.status === 404) {
-                        articleDetailContainer.innerHTML = '<p style="text-align: center; color: #E966A0;">Article not found.</p>';
+                        postDetailContainer.innerHTML = '<p style="text-align: center; color: #E966A0;">Article not found.</p>';
                     } else {
                         throw new Error(`HTTP error! status: ${response.status}`);
                     }
@@ -708,13 +708,13 @@
                 }
                 const data = await response.json();
 
-                const article = data.article;
+                const post = data.post;
                 const author = data.author;
                 const image_urls = data.image_urls;
 
                 let formattedDate = 'Unknown Date';
-                if (article.create_at) {
-                    const createdAt = new Date(article.create_at);
+                if (post.create_at) {
+                    const createdAt = new Date(post.create_at);
                     if (!isNaN(createdAt.getTime())) {
                         formattedDate = createdAt.toLocaleDateString('en-US', {
                             year: 'numeric',
@@ -726,30 +726,30 @@
                     }
                 }
 
-                const tagsHtml = article.tags ?
-                    article.tags.split(',').map(tag => `<span class="post-tag">#${tag.trim()}</span>`).join(' ') :
+                const tagsHtml = post.tags ?
+                    post.tags.split(',').map(tag => `<span class="post-tag">#${tag.trim()}</span>`).join(' ') :
                     '<span style="color: rgba(233, 102, 160, 0.5);">No tags</span>';
 
-                const articleDetailHtml = `
-                    <div class="article-header">
-                        <h2>${article.title}</h2>
-                        <p class="article-meta">
-                            Author: ${author.username || 'Unknown'} | Date: ${formattedDate} | Views: ${article.views}
+                const postDetailHtml = `
+                    <div class="post-header">
+                        <h2>${post.title}</h2>
+                        <p class="post-meta">
+                            Author: ${author.username || 'Unknown'} | Date: ${formattedDate} | Views: ${post.views}
                         </p>
-                        <div class="article-tags">${tagsHtml}</div>
+                        <div class="post-tags">${tagsHtml}</div>
                     </div>
-                    <div class="article-content">
-                        <p>${article.content.replace(/\n/g, '<br>')}</p>
-                        ${image_urls.length > 0 ? image_urls.map(url => `<img src="${url}" alt="Article Image" class="article-image">`).join('') : ''}
+                    <div class="post-content">
+                        <p>${post.content.replace(/\n/g, '<br>')}</p>
+                        ${image_urls.length > 0 ? image_urls.map(url => `<img src="${url}" alt="Article Image" class="post-image">`).join('') : ''}
                     </div>
                 `;
-                articleDetailContainer.innerHTML = articleDetailHtml;
+                postDetailContainer.innerHTML = postDetailHtml;
 
 
                 const currentUser = await getCurrentUser();
 
-                if (currentUser && currentUser.id === article.owner_id) {
-                    editButton.href = `write_post.html?id=${article.id}`;
+                if (currentUser && currentUser.id === post.owner_id) {
+                    editButton.href = `write_post.html?id=${post.id}`;
                     editButton.style.display = 'inline-block';
                     deleteButton.style.display = 'inline-block';
 
@@ -757,7 +757,7 @@
                         if (confirm('Are you sure you want to delete this post?')) {
                             try {
                                 const token = localStorage.getItem('access_token');
-                                const deleteResponse = await fetch(`/api/blog/articles/${article.id}`, {
+                                const deleteResponse = await fetch(`/api/board/posts/${post.id}`, {
                                     method: 'DELETE',
                                     headers: {
                                         'X-User-Id': currentUser.id,
@@ -780,8 +780,8 @@
                 }
 
             } catch (error) {
-                console.error('Error fetching article details:', error);
-                articleDetailContainer.innerHTML = '<p style="text-align: center; color: #E966A0;">Failed to load article. Error: ' + error.message + '</p>';
+                console.error('Error fetching post details:', error);
+                postDetailContainer.innerHTML = '<p style="text-align: center; color: #E966A0;">Failed to load post. Error: ' + error.message + '</p>';
             }
         }
 
@@ -790,7 +790,7 @@
         //popular posts
         async function fetchPopularPosts() {
             try {
-                const response = await fetch(`/api/blog/popular-articles?limit=5`); // limit=5로 5개만 요청
+                const response = await fetch(`/api/board/popular-posts?limit=5`); // limit=5로 5개만 요청
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }

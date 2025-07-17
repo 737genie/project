@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>Article Detail - Genie's WebPage</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        /* Basic Settings: box-sizing border-box for all elements, remove default margin/padding */
+        * {
+            box-sizing: border-box;
+            font-family: Arial, Helvetica, sans-serif;
+            margin: 0;
+            padding: 0;
+            letter-spacing: 0.5px;
+        }
+
+        /* Set html and body height to full viewport to fill without scroll */
+        html,
+        body {
+            height: 100%;
+        }
+
+        /* Set body as flex container, align children in column direction */
+        body {
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* --- Navigation Bar Styles (Copied from index.html) --- */
+        .topnav {
+            background-color: #2B2730;
+            flex-shrink: 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 10px;
+        }
+
+        .topnav>div:first-child {
+            display: flex;
+            align-items: center;
+        }
+
+        .topnav>div:last-child {
+            display: flex;
+            align-items: center;
+        }
+
+        .topnav a {
+            color: #E966A0;
+            text-align: center;
+            padding: 14px 16px;
+            text-decoration: none;
+            transition: background-color 0.3s, color 0.3s, font-size 0.3s;
+        }
+
+        .topnav>div:first-child a {
+            font-size: 24px;
+            font-weight: bold;
+            padding: 20px 25px;
+        }
+
+        .topnav a:hover {
+            background-color: #feffa9;
+            color: #9575DE;
+        }
+
+        /* auth.js dynamically added navbar-text style */
+        .navbar-text {
+            color: #E966A0;
+            margin-right: 16px;
+            font-size: 16px;
+        }
+
+        /* Override specific link style within navbar-text (username) */
+        .navbar-text a {
+            color: #feffa9;
+            cursor: default;
+            padding: 0;
+            transition: none;
+            text-decoration: none;
+        }
+
+        .navbar-text a:hover {
+            background-color: transparent;
+            color: #feffa9;
+        }
+
+
+        /* --- Main Content Wrapper --- */
+        .main-content-wrapper {
+            flex-grow: 1;
+            background-color: #2B2730;
+            display: flex;
+            justify-content: center;
+            padding: 20px;
+            overflow-y: auto;
+            align-items: flex-start;
+            gap: 20px;
+            /* Added gap for potential future side content */
+        }
+
+        /* --- Article Detail Container --- */
+        .article-detail-container {
+            width: 100%;
+            max-width: 900px;
+            background-color: #2B2730;
+            border: 2px solid #9575DE;
+            border-radius: 20px;
+            padding: 30px 40px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            color: #feffa9;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .article-detail-title {
+            font-size: 2.8em;
+            color: #feffa9;
+            margin-bottom: 20px;
+            text-align: center;
+            line-height: 1.2;
+        }
+
+        .article-detail-meta {
+            font-size: 1em;
+            color: #b0aeb3;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .article-detail-meta a {
+            color: #E966A0;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .article-detail-meta a:hover {
+            text-decoration: underline;
+        }
+
+        .article-detail-image {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            object-fit: cover;
+            align-self: center; /* Center image if it's smaller than max-width */
+        }
+
+        .article-detail-content {
+            font-size: 1.2em;
+            line-height: 1.8;
+            color: #feffa9;
+            white-space: pre-wrap; /* Preserves whitespace and line breaks */
+            word-wrap: break-word; /* Breaks long words */
+            margin-bottom: 30px;
+        }
+        .article-detail-content p {
+            margin-bottom: 1em; /* Add some spacing between paragraphs if using <p> tags */
+        }
+
+
+        .article-detail-tags {
+            margin-top: 20px;
+            margin-bottom: 20px;
+            color: #b0aeb3;
+            font-size: 1em;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            justify-content: center;
+        }
+
+        .article-detail-tags span {
+            background-color: #9575DE;
+            color: #feffa9;
+            padding: 6px 12px;
+            border-radius: 15px;
+            font-size: 0.9em;
+            font-weight: bold;
+        }
+
+        .article-actions {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .action-button {
+            background-color: #E966A0;
+            color: #2B2730;
+            padding: 12px 25px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            text-decoration: none;
+            transition: background-color 0.3s, color 0.3s;
+            font-size: 1.1em;
+            text-align: center;
+        }
+
+        .action-button:hover {
+            background-color: #feffa9;
+            color: #9575DE;
+        }
+
+        .back-button {
+            background-color: #2B2730;
+            color:#E966A0;
+          }
+          
+          .back-button:hover {
+            background-color: #333;
+            color:#E966A0;
+        }
+
+        .no-article-message {
+            text-align: center;
+            color: #E966A0; /* Changed to match your provided style */
+            font-size: 1.5em;
+            padding: 50px 0;
+        }
+
+        /* --- Footer Styles (Copied from index.html) --- */
+        .footer {
+            background-color: #2B2730;
+            padding: 10px;
+            flex-shrink: 0;
+            text-align: center;
+            color: rgba(254, 255, 169, 0.5);
+            font-size: 0.8em;
+        }
+
+        /* --- Responsive Layout (Mobile) --- */
+        @media (max-width: 768px) {
+            .topnav {
+                flex-direction: column;
+                padding: 10px 0;
+            }
+
+            .topnav>div {
+                flex-direction: column;
+                width: 100%;
+                align-items: stretch;
+            }
+
+            .topnav a,
+            .topnav .navbar-text,
+            .topnav .logout-button-link {
+                padding: 10px;
+                width: 100%;
+            }
+
+            .topnav>div:first-child a {
+                font-size: 20px;
+                padding: 15px;
+            }
+
+            .topnav>div:last-child {
+                margin-top: 10px;
+            }
+
+            .main-content-wrapper {
+                padding: 10px;
+            }
+
+            .article-detail-container {
+                padding: 20px 25px;
+            }
+
+            .article-detail-title {
+                font-size: 2em;
+            }
+
+            .article-detail-meta {
+                font-size: 0.9em;
+            }
+
+            .article-detail-content {
+                font-size: 1em;
+            }
+
+            .article-actions {
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .action-button {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="topnav">
+        <div>
+            <a href="index.html">Genie's WebPage</a>
+        </div>
+        <div id="auth-links">
+            <a href="login.html">Log In</a>
+            <a href="signup.html">Sign Up</a>
+        </div>
+    </div>
+
+    <div class="main-content-wrapper">
+        <div class="article-detail-container" id="article-detail-container">
+            <p class="no-article-message">Loading article...</p>
+            </div>
+    </div>
+
+    <div class="footer">
+        <p>&copy; 2025 Genie's Blog. All rights reserved.</p>
+    </div>
+
+    <script src="/js/auth.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            renderNavbar(); // auth.js의 함수 호출
+
+            // HTML에서 버튼 요소들을 가져옵니다. (hidden by default in CSS or HTML)
+            // 스타일을 inline-block으로 변경하므로, 이 요소들은 HTML에 있어야 합니다.
+            // 예시: <div class="article-actions" id="article-actions">
+            //          <a id="edit-article-button" class="action-button" style="display: none;">Edit Article</a>
+            //          <button id="delete-article-button" class="action-button delete-button" style="display: none;">Delete Article</button>
+            //       </div>
+            // 만약 현재 HTML에 이 버튼들이 없다면, 아래 `<div class="article-actions">` 부분에 추가해주세요.
+
+            // 기존 article_detail.html에 있던 action-button div에 버튼이 동적으로 삽입되므로,
+            // 별도로 id로 가져올 필요 없이, 조건부 렌더링을 유지하는 것이 더 좋습니다.
+            // 따라서, 이 변수 선언은 제거하고 기존의 동적 HTML 생성 방식을 유지합니다.
+            // const editButton = document.getElementById('edit-article-button'); // 이전 코드에서 제거됨
+            // const deleteButton = document.getElementById('delete-article-button'); // 이전 코드에서 제거됨
+
+            const articleDetailContainer = document.getElementById('article-detail-container');
+            const urlParams = new URLSearchParams(window.location.search);
+            const articleId = urlParams.get('id'); // postId 대신 articleId 사용
+
+            if (!articleId) {
+                articleDetailContainer.innerHTML = '<p class="no-article-message">No article ID provided.</p>';
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/blog/articles/${articleId}`); // /api/board/posts -> /api/blog/articles로 변경
+
+                if (!response.ok) {
+                    if (response.status === 404) {
+                        articleDetailContainer.innerHTML = '<p class="no-article-message">Article not found.</p>';
+                    } else {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return;
+                }
+                const data = await response.json();
+
+                // 데이터를 당신의 백엔드 응답 구조에 맞게 매핑
+                const article = data.article; // `data.post` -> `data.article`
+                const authorData = data.author; // `data.author`
+                const imageUrls = data.image_urls; // `data.image_urls`
+
+                let formattedDate = 'Unknown Date';
+                if (article.create_at) { // post.create_at -> article.create_at
+                    const createdAt = new Date(article.create_at);
+                    if (!isNaN(createdAt.getTime())) {
+                        formattedDate = createdAt.toLocaleDateString('en-US', {
+                            year: 'numeric',
+                            month: 'short',
+                            day: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit'
+                        });
+                    }
+                }
+
+                // 태그 처리: post.tags -> article.tags
+                // 백엔드에서 tags가 문자열 "paging"으로 온다고 하셨으므로, 이를 배열로 만듭니다.
+                // 만약 "tag1, tag2"처럼 쉼표로 구분되어 온다면 .split(',')을 사용합니다.
+                const tagsArray = typeof article.tags === 'string' && article.tags.length > 0
+                                  ? article.tags.split(',').map(tag => tag.trim()) // 쉼표로 구분될 경우
+                                  : [];
+                // 만약 항상 단일 태그 문자열이라면 (예: "paging")
+                // const tagsArray = typeof article.tags === 'string' && article.tags.length > 0
+                //                   ? [article.tags]
+                //                   : [];
+
+
+                const tagsHtml = tagsArray.length > 0 ?
+                                 tagsArray.map(tag => `<span class="article-detail-tags">#${tag}</span>`).join(' ') :
+                                 '<span style="color: #2B2730;">No tags</span>'; // 클래스명 일관성 유지
+
+                // 이미지 URL 배열을 순회하며 여러 이미지 표시
+                const imagesHtml = imageUrls.length > 0 ?
+                                   imageUrls.map(url => `<img src="${url}" alt="Article Image" class="article-detail-image">`).join('') :
+                                   '';
+
+                const articleDetailHtml = `
+                    <h1 class="article-detail-title">${article.title}</h1>
+                    <p class="article-detail-meta">
+                        Written by <a href="index.html?owner_id=${article.owner_id}">${authorData.username || 'Unknown'}</a> on ${formattedDate} | Views: ${article.views}
+                    </p>
+                    <hr>
+                    <div class="article-detail-tags">${tagsHtml}</div>
+                    <div class="article-detail-content">
+                        ${article.content.replace(/\n/g, '<br>')}
+                    </div>
+                    ${imagesHtml} <div class="article-actions" id="article-actions">
+                        </div>
+                `;
+                articleDetailContainer.innerHTML = articleDetailHtml;
+
+                const currentUser = await getCurrentUser(); // auth.js에서 사용자 정보 가져오기
+
+                if (currentUser && currentUser.id === article.owner_id) {
+                    const articleActions = document.getElementById('article-actions');
+                    articleActions.innerHTML = `
+                        <a href="create_article.html?id=${article.id}" class="action-button">Edit</a> <button class="action-button" id="delete-article-btn">Delete</button>
+                        <a href="blog.html" class="action-button back-button">Back to List</a>
+                    `;
+
+                    document.getElementById('delete-article-btn').onclick = async () => {
+                        if (confirm('Are you sure you want to delete this article?')) { // post -> article
+                            try {
+                                const token = localStorage.getItem('accessToken'); // access_token -> accessToken
+                                const deleteResponse = await fetch(`/api/blog/articles/${article.id}`, { // /api/board/posts -> /api/blog/articles
+                                    method: 'DELETE',
+                                    headers: {
+                                        // 'X-User-Id': currentUser.id, // FastAPI에서는 일반적으로 Authorization 헤더만으로 사용자 식별
+                                        'Authorization': token ? `Bearer ${token}` : ''
+                                    }
+                                });
+
+                                if (!deleteResponse.ok) {
+                                    const errorText = await deleteResponse.text(); // 오류 메시지 확인용
+                                    throw new Error(`Deletion failed! status: ${deleteResponse.status} - ${errorText}`);
+                                }
+
+                                alert('Article successfully deleted.'); // Post -> Article
+                                window.location.href = 'blog.html';
+                            } catch (deleteError) {
+                                console.error('Error deleting article:', deleteError); // post -> article
+                                alert('Failed to delete article: ' + deleteError.message); // post -> article
+                            }
+                        }
+                    };
+                }
+
+            } catch (error) {
+                console.error('Error fetching article details:', error); // post -> article
+                articleDetailContainer.innerHTML = '<p class="no-article-message">Failed to load article. Error: ' + error.message + '</p>'; // post -> article
+            }
+        });
+    </script>
+
+</body>
+
+</html>

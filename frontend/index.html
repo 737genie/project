@@ -620,7 +620,7 @@
         //popular posts
         async function fetchPopularPosts() {
             try {
-                const response = await fetch(`/api/blog/popular-articles?limit=5`); // limit=5로 5개만 요청
+                const response = await fetch(`/api/board/popular-posts?limit=5`); // limit=5로 5개만 요청
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }

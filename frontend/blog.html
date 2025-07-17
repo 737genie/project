@@ -2,11 +2,11 @@
 <html lang="en">
 
 <head>
-    <title>Genie's Bulletin Board</title>
+    <title>Genie's WebPage</title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <style>
-        /* 기본 설정: 모든 요소에 box-sizing을 border-box로, 기본 마진/패딩 제거 */
+        /* Basic Settings: box-sizing border-box for all elements, remove default margin/padding */
         * {
             box-sizing: border-box;
             font-family: Arial, Helvetica, sans-serif;
@@ -15,13 +15,13 @@
             letter-spacing: 0.5px;
         }
 
-        /* html과 body의 높이를 뷰포트 전체로 설정하여 스크롤 없이 꽉 차게 만듭니다. */
+        /* Set html and body height to full viewport to fill without scroll */
         html,
         body {
             height: 100%;
         }
 
-        /* body를 flex 컨테이너로 설정하고, 자식 요소들을 세로(column) 방향으로 정렬합니다. */
+        /* Set body as flex container, align children in column direction */
         body {
             display: flex;
             flex-direction: column;
@@ -30,173 +30,401 @@
         /* --- Navigation Bar Styles --- */
         .topnav {
             background-color: #2B2730;
-            flex-shrink: 0;
-            /* 높이가 줄어들지 않도록 고정 */
-            display: flex;
-            /* .topnav 자체를 flex 컨테이너로 만듭니다. */
-            justify-content: space-between;
-            /* Link 1과 (Link 2,3 그룹)을 양 끝으로 정렬 */
-            align-items: center;
-            /* 수직 중앙 정렬 */
-            padding: 0 10px;
-            /* 좌우 패딩 추가로 가장자리에서 약간 여백 주기 */
+            flex-shrink: 0; /* Keep height fixed */
+            display: flex; /* Make .topnav a flex container */
+            justify-content: space-between; /* Align to ends */
+            align-items: center; /* Vertically center */
+            padding: 0 10px; /* Left/right padding */
         }
 
-        /* Link 1 (첫 번째 div) 스타일 */
+        /* Link 1 (first div) style */
         .topnav>div:first-child {
             display: flex;
-            /* 내부 링크를 정렬하기 위해 flex 사용 */
             align-items: center;
         }
 
-        /* Link 2, 3 그룹 (두 번째 div) 스타일 */
+        /* Link 2, 3 group (second div) style */
         .topnav>div:last-child {
             display: flex;
-            /* 내부 링크들을 정렬하기 위해 flex 사용 */
             align-items: center;
         }
 
-        /* 모든 topnav 링크에 공통 적용되는 스타일 */
+        /* Common styles for all topnav links */
         .topnav a {
             color: #E966A0;
             text-align: center;
             padding: 14px 16px;
             text-decoration: none;
             transition: background-color 0.3s, color 0.3s, font-size 0.3s;
-            /* 부드러운 전환 효과 */
         }
 
-        /* Link 1 (첫 번째 링크) 스타일: 크기 키우기 */
+        /* Link 1 (first link) style: larger size */
         .topnav>div:first-child a {
             font-size: 24px;
-            /* Link 1 텍스트 크기 증가 */
             font-weight: bold;
-            /* 폰트 두께도 bold로 설정 */
             padding: 20px 25px;
-            /* 패딩도 더 크게 주어 버튼처럼 보이도록 */
         }
 
-        /* 호버 시 색상 변경 */
+        /* Hover color change */
         .topnav a:hover {
             background-color: #feffa9;
             color: #9575DE;
         }
 
-        /* --- Content Area Styles --- */
-        .content {
-            /* 기존 높이 고정 제거 및 flex-grow: 1 유지 */
-            background-color: #2B2730;
-            padding: 20px;
-            flex-grow: 1;
-            /* 남은 수직 공간을 모두 차지 */
-            overflow: hidden;
-            /* .content 자체에는 스크롤 숨김 (내부에서 관리) */
-
-            display: flex;
-            /* .content를 flex 컨테이너로 설정 */
-            justify-content: center;
-            /* .content2와 .board를 가로 중앙 정렬 (선택 사항) */
-            align-items: stretch;
-            /* 자식 요소들이 높이를 채우도록 설정 */
-            gap: 20px;
-            /* .content2와 .board 사이의 간격 */
+        /* --- Main Content Wrapper (Primary content wrapper) --- */
+        /* Take up all remaining space between nav and footer */
+        .main-content-wrapper {
+            flex-grow: 1; /* Occupy remaining vertical space */
+            background-color: #2B2730; /* Background color */
+            display: flex; /* Use flex for internal item alignment */
+            justify-content: center; /* Horizontal centering */
+            padding: 20px; /* Inner padding */
+            overflow-y: auto; /* Vertical scroll if content overflows */
+            align-items: flex-start; /* Align content to the top */
+            gap: 20px; /* Space between sidebar and main content */
         }
 
-        /* .content2와 .board를 담는 새로운 컨테이너 */
-        .content2 {
-            display: flex;
-            /* .content2를 flex 컨테이너로 설정 */
-            flex-direction: column;
-            /* .contexts들을 세로로 쌓습니다. */
-            width: 20%;
-            /* .content2의 너비 (기존 .contexts의 너비와 동일하게) */
-            /* .content2의 높이는 .content에서 flex-grow: 1을 받으므로 따로 설정할 필요 없음 */
-            gap: 20px;
-            /* 두 contexts 사이에 간격 추가 */
-        }
-
-        .contexts {
-            /* 기존 contexts 스타일 유지 */
-            width: 100%;
-            height: 50%;
-            background-color: #6554AF;
-            border: 1px solid #6554AF;
+        /* --- Sidebar Styles --- */
+        .sidebar {
+            flex-shrink: 0; /* Prevent sidebar from shrinking */
+            width: 250px; /* Fixed width for the sidebar */
+            background-color: #6554AF; /* Same as blog-container */
             border-radius: 20px;
-            display: flex;
-            flex-direction: column;
-            /* 자식 요소들을 세로로 정렬 */
-            align-items: center;
-            /* 수평 중앙 정렬 */
-            padding: 10px;
-            /* 내부 여백 추가 */
-            overflow: hidden;
-            /* 내용이 넘칠 경우 숨김 */
-        }
-
-        .contexts h3 {
-            text-align: center;
-            margin-bottom: 10px;
-            /* 제목과 카드 사이 간격 */
-            color: #2B2730;
-        }
-
-        /* My Profile 링크 스타일 */
-        .contexts h3 a {
-            text-decoration: none;
-            color: #2B2730;
-            font-size: 1.2em;
-            /* 제목 폰트 크기 조정 */
-        }
-
-        .board {
-            width: 70%;
-            background-color: #6554AF;
-            height: 100%;
-            /* 부모인 .content의 높이를 꽉 채우도록 설정 */
-            border-radius: 20px;
-            border: 1px solid #6554AF;
             padding: 20px;
-            /* Adjust padding for board content */
-            display: flex;
-            flex-direction: column;
-            /* Arrange board elements vertically */
-            /* justify-content: flex-start;  Align content to the start */
-            align-items: center;
-            /* Center items horizontally within the board */
-            font-size: 1.1em;
-            /* Adjust general font size for board */
-            color: #E966A0;
-            overflow-y: auto;
-            /* Allow vertical scrolling for board content if it overflows */
-        }
-
-        .margin10 {
-            margin-top: 20px;
-        }
-
-        .margin60 {
-            margin-top: 60px;
-        }
-
-        .promo {
-            width: 100%;
-            padding: 20px;
-            text-align: center;
-            /* Center the text within promo */
-            margin-bottom: 20px;
-            /* Space below the promo section */
-        }
-
-        strong {
-            font-size: 60px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
             color: #feffa9;
-            /* Make strong text more prominent */
+            align-self: flex-start; /* Align sidebar to the top within flex container */
         }
 
-        .promo .sentence {
+        .sidebar h3 {
+            color: #E966A0;
+            margin-bottom: 20px;
+            text-align: center;
+            font-size: 1.5em;
+        }
+
+        /* --- Main Articles Pane Styles --- */
+        .main-articles-pane {
+            flex-grow: 1; /* Allow main content to take remaining space */
+            max-width: 800px; /* Max width for the main articles area */
+        }
+
+        /* --- Blog Container (Container for blog content) --- */
+        .blog-container {
+            width: 100%;
+            background-color: #6554AF;
+            border-radius: 20px;
+            padding: 30px 40px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            color: #feffa9;
+        }
+
+        .blog-header {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #E966A0;
+            font-size: 2.2em;
+            font-weight: bold;
+        }
+
+        .view-toggle-container {
+            text-align: right;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .toggle-view-button {
+            background-color: #E966A0;
             color: #2B2730;
-            /* Adjust sentence color for better contrast */
+            padding: 12px 15px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background-color 0.3s, color 0.3s;
+            font-size: 1.1em;
+        }
+
+        .toggle-view-button:hover {
+            background-color: #feffa9;
+            color: #9575DE;
+        }
+
+        .create-article-button {
+            display: inline-block;
+            background-color: #E966A0;
+            color: #2B2730;
+            padding: 12px 25px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: bold;
+            transition: background-color 0.3s, color 0.3s;
+            font-size: 1.1em;
+        }
+
+        .create-article-button:hover {
+            background-color: #feffa9;
+            color: #9575DE;
+        }
+
+
+        /* --- Default View: Card View (Existing CSS used for card view) --- */
+        .article-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            display: flex; /* Default to flex (card view) */
+            flex-direction: column; /* Stack vertically */
+            gap: 25px; /* Gap between each card item */
+        }
+
+        .article-item {
+            background-color: #2B2730;
+            border-radius: 10px;
+            padding: 20px 25px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+            transition: transform 0.2s ease-in-out;
+            display: flex;
+            flex-direction: column; /* Changed to column for better mobile handling, then adjusted inner flex */
+            align-items: flex-start;
+            color: #feffa9;
+        }
+
+        .article-item:hover {
+            transform: translateY(-5px);
+        }
+
+        .article-title {
+            font-size: 1.8em;
+            color: #feffa9;
+            margin-bottom: 15px;
+            text-decoration: none;
+            white-space: normal;
+            overflow: visible;
+            text-overflow: unset;
+        }
+
+        .article-title:hover {
+            color: #E966A0;
+        }
+
+        .article-meta {
+            font-size: 0.9em;
+            color: #757179;
+            margin-bottom: 0;
+        }
+
+        .article-content-preview {
+            font-size: 1.1em;
+            line-height: 1.6;
+            color: #feffa9;
+            margin-bottom: 0;
+            overflow: hidden;
+            display: -webkit-box;
+            -webkit-line-clamp: 3; /* Display preview text in card view */
+            -webkit-box-orient: vertical;
+        }
+
+        .read {
+            display: contents;
+        }
+
+        .read-more-link {
+            display: inline-block;
+            color: #E966A0;
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 0.95em;
+            transition: color 0.3s;
+            margin-top: 20px;
+            align-self: flex-end; /* Align to the right */
+        }
+
+        .read-more-link:hover {
+            color: #9575DE;
+        }
+
+        .article-image-preview {
+            max-width: 200px; /* Max width for card view image */
+            min-width: 120px; /* Min width for responsiveness */
+            height: 150px; /* Fixed height */
+            border-radius: 8px;
+            object-fit: cover;
+            flex-shrink: 0; /* Keep image size fixed */
+        }
+
+        /* Re-using existing article-img for flex properties */
+        .article-img {
+            display: flex;
+            flex-direction: row; /* Arrange image and content horizontally */
+            justify-content: space-between;
+            gap: 20px; /* Gap between image and content */
+            flex-grow: 1; /* Allow to fill remaining space */
+            width: 100%; /* Ensure it takes full width of parent article-item */
+            margin-bottom: 15px; /* Add margin below the image/content row */
+        }
+
+        .article-cont {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            flex-grow: 1;
+        }
+
+        /* --- Grid View (applies when .grid-view class is present) --- */
+        .article-list.grid-view {
+            display: grid; /* Change to grid layout */
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); /* Responsive grid columns */
+            gap: 20px; /* Gap between grid items */
+        }
+
+        .article-list.grid-view .article-item {
+            flex-direction: column; /* Stack vertically in grid view */
+            align-items: stretch; /* Stretch to fill space */
+            padding: 15px; /* Padding for grid view */
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3); /* More emphasized shadow */
+        }
+
+        .article-list.grid-view .article-img {
+            flex-direction: column; /* Stack image and text preview vertically */
+            justify-content: flex-start;
+            align-items: center; /* Center image and text */
+            gap: 15px; /* Gap between image and text preview */
+            width: 100%;
+            margin-bottom: 0; /* No margin below image/content in grid view */
+        }
+
+        .article-list.grid-view .article-image-preview {
+            max-width: 100%; /* Full width in grid view */
+            height: 180px; /* Fixed height for grid view image */
+            margin-bottom: 0; /* Flex gap handles spacing */
+            flex-shrink: 1; /* Allow shrinking */
+        }
+
+        .article-list.grid-view .article-title {
+            font-size: 1.2em; /* Adjust grid view title size */
+            white-space: nowrap; /* Single line */
+            overflow: hidden;
+            text-overflow: ellipsis;
+            text-align: center; /* Center title */
+            margin-bottom: 5px; /* Reduce bottom margin */
+        }
+
+        .article-list.grid-view .article-content-preview {
+            display: none; /* Hide preview text in grid view */
+        }
+
+        .article-list.grid-view .article-cont {
+            padding-left: 0; /* Remove padding in grid view */
+            align-items: center; /* Center inner elements */
+            gap: 5px; /* Smaller gap */
+        }
+
+        .article-list.grid-view .read-more-link {
+            align-self: center; /* Center button */
+            margin-top: 15px; /* Adjust margin */
+            background-color: #E966A0; /* Re-set background */
+            color: #2B2730;
+            padding: 10px 18px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .article-list.grid-view .read-more-link:hover {
+            background-color: #feffa9;
+            color: #9575DE;
+        }
+
+        .no-articles-message {
+            text-align: center;
+            color: #feffa9;
             font-size: 1.2em;
+            padding: 50px 0;
+            opacity: 50%;
+        }
+
+        /* --- Tag List Styles (for sidebar) --- */
+        .tag-list {
+            list-style: none;
+            padding: 0;
+            margin-top: 10px; /* Adjust spacing within sidebar */
+            display: flex;
+            flex-wrap: wrap; /* Allow tags to wrap */
+            gap: 10px;
+            justify-content: center; /* Center tags in the sidebar */
+            flex-direction: column; /* Stack tags vertically by default in sidebar */
+        }
+
+        .tag-item {
+            background-color: #9575DE;
+            color: #feffa9;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 0.95em;
+            font-weight: bold;
+            text-decoration: none;
+            transition: background-color 0.3s, transform 0.2s;
+            cursor: pointer;
+            width: 100%; /* Make tags fill sidebar width */
+            text-align: left;
+        }
+
+        .tag-item a {
+            display: block; /* Make the entire tag item clickable */
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .tag-item:hover {
+            background-color: #E966A0;
+            transform: translateY(-2px);
+        }
+
+        .tag-count {
+            font-size: 0.8em;
+            color: rgba(254, 255, 169, 0.7);
+            margin-left: 5px;
+        }
+
+        .no-tags-message {
+            color: #feffa9;
+            font-size: 1.2em;
+            padding: 20px 0;
+            text-align: center;
+            opacity: 50%;
+        }
+        /* Pagination Button Styles */
+        .pagination-button {
+            background-color: #2B2730;
+            color: #E966A0;
+            border: 1px solid #E966A0;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9em;
+            transition: background-color 0.3s, color 0.3s, border-color 0.3s;
+        }
+
+        .pagination-button:hover:not(:disabled) {
+            background-color: #E966A0;
+            color: #feffa9;
+            border-color: #feffa9;
+        }
+
+        .pagination-button:disabled {
+            background-color: #333;
+            color: #666;
+            cursor: not-allowed;
+            border-color: #333;
+        }
+
+        .pagination-button.active {
+            background-color: #E966A0;
+            color: #feffa9;
+            border-color: #feffa9;
+            font-weight: bold;
         }
 
         /* --- Footer Styles --- */
@@ -204,481 +432,193 @@
             background-color: #2B2730;
             padding: 10px;
             flex-shrink: 0;
-            /* 높이가 줄어들지 않도록 고정 */
             text-align: center;
-            color: #E966A0;
-            /* Footer text color */
-            font-size: 0.9em;
+            color: rgba(254, 255, 169, 0.5);
+            font-size: 0.8em;
         }
 
+        /* auth.js dynamically added navbar-text style */
         .navbar-text {
             color: #E966A0;
             margin-right: 16px;
             font-size: 16px;
-
         }
 
-        /* auth.js에서 동적으로 추가되는 navbar-text 스타일 */
+        /* Override specific link style within navbar-text (username) */
         .navbar-text a {
-            font-weight: bold;
-            /* 원한다면 글씨를 굵게 */
             color: #feffa9;
-            /* 사용자 이름의 색상을 다르게 지정 (예: #feffa9) */
+            cursor: default;
             padding: 0;
-            /* padding 제거 */
             transition: none;
-            /* 전환 효과 제거 */
-            margin-left: 5px;
+            text-decoration: none;
         }
 
         .navbar-text a:hover {
             background-color: transparent;
-            /* 호버 시 배경색 변경 없음 */
-            color: #feffa9;
-            /* 호버 시 색상 변경 없음 */
-        }
-
-        /* auth.js에서 동적으로 추가되는 로그아웃 버튼 스타일 */
-        #logout-button {
-            /* id를 사용하므로 #으로 선택 */
-            background-color: #E966A0;
-            color: white;
-            border: none;
-            padding: 10px 16px;
-            /* topnav 링크 패딩과 유사하게 */
-            border-radius: 5px;
-            cursor: pointer;
-            transition: background-color 0.3s, color 0.3s;
-            /* 부드러운 전환 효과 */
-            font-size: 16px;
-            /* 기본 링크 폰트 크기와 유사하게 */
-            text-decoration: none;
-            /* 텍스트 밑줄 제거 */
-        }
-
-
-        #logout-button:hover {
-            background-color: #C75185;
-            /* 호버 시 색상 변경 */
-            color: #feffa9;
-            /* 호버 시 텍스트 색상 변경 (선택 사항) */
-        }
-
-        #about-me-card {
-            width: 100%;
-            /* 부모 .contexts의 너비를 꽉 채움 */
-            flex-grow: 1;
-            /* 남은 수직 공간을 채우도록 성장 */
-            display: flex;
-            /* 프로필 카드를 flex 컨테이너로 만듭니다. */
-            justify-content: center;
-            /* 수평 중앙 정렬 */
-            align-items: center;
-            /* 수직 중앙 정렬 (내용이 적을 때) */
-            /* background-color: #f0f0f0; /* 디버깅용 배경색 (나중에 제거) */
-        }
-
-        .profile-card {
-            display: flex;
-            flex-direction: column;
-            /* 이미지와 콘텐츠를 세로로 쌓음 */
-            align-items: center;
-            /* 모든 내부 요소를 가로 중앙 정렬 */
-            width: 100%;
-            /* 부모 #about-me-card의 너비를 꽉 채움 */
-            max-width: 250px;
-            /* 카드 최대 너비 설정 (contexts 내에서 적절히) */
-            /* background-color: #fff; /* 카드 배경색 */
-            padding: 15px;
-            border-radius: 15px;
-            /* box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); */
-            /* 은은한 그림자 (선택 사항) */
-            color: #2B2730;
-            /* 텍스트 색상 */
-        }
-
-        .profile-image {
-            width: 70%;
-            /* 이미지 크기 조절 */
-            height: 70%;
-            border-radius: 10px;
-            object-fit: cover;
-            /* 이미지가 잘리지 않고 채워지도록 */
-            margin-bottom: 15px;
-            /* 이미지와 콘텐츠 사이 간격 */
-        }
-
-        .profile-content {
-            text-align: center;
-            /* 내부 텍스트 중앙 정렬 */
-            width: 100%;
-            margin-top: 30px;
-        }
-
-        .profile-header {
-            display: flex;
-            justify-content: space-around;
-            /* 가로 중앙 정렬 */
-            align-items: center;
-            /* 수직 중앙 정렬 */
-            margin-bottom: 8px;
-            /* 헤더와 바이오 사이 간격 */
-            margin-top: 10px;
-        }
-
-        .profile-header h4 {
-            margin: 0;
-            /* h4의 기본 마진 제거 */
-            font-size: 1.1em;
-            /* 사용자 이름 폰트 크기 */
-            color: #E966A0;
-            /* 사용자 이름 색상 */
-            font-weight: bold;
-        }
-
-        .aaa {
-            text-decoration: none;
-            color: #E966A0;
-        }
-
-        .aaa:hover {
             color: #feffa9;
         }
 
-        .edit-link {
-            margin-left: 10px;
-            /* 이름과 정보수정 링크 사이 간격 */
-            font-size: 0.8em;
-            /* 링크 폰트 크기 */
-            color: #E966A0;
-            /* 링크 색상 */
-            background-color: #2B2730;
-            text-decoration: none;
-            /* 밑줄 제거 */
-            transition: color 0.3s;
-            padding-top: 5px;
-            padding-bottom: 5px;
-            padding-right: 10px;
-            padding-left: 10px;
-            border-radius: 10px;
-        }
 
-        .edit-link:hover {
-            color: #6554AF;
-            /* 호버 시 색상 변경 */
-            background-color: #feffa9;
-        }
-
-        .profile-bio {
-            font-size: 0.9em;
-            /* 자기소개 폰트 크기 */
-            color: #333;
-            line-height: 1.4;
-            margin: 0;
-            /* 기본 마진 제거 */
-            max-height: 60px;
-            /* 자기소개 최대 높이 제한 */
-            overflow: hidden;
-            /* 넘치는 내용 숨김 */
-            text-overflow: ellipsis;
-            /* 넘치는 텍스트 ...으로 표시 */
-            display: -webkit-box;
-            -webkit-line-clamp: 3;
-            /* 최대 3줄까지 표시 */
-            -webkit-box-orient: vertical;
-            color: #2B2730;
-            /* Adjusted for visibility */
-        }
-
-        /* --- Bulletin Board Specific Styles --- */
-        .board-header {
-            width: 100%;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-            padding-bottom: 10px;
-            border-bottom: 1px solid rgba(233, 102, 160, 0.3);
-            /* Lighter pink border */
-        }
-
-        .board-header h2 {
-            color: #feffa9;
-            font-size: 2.2em;
-            font-weight: bold;
-        }
-
-        .write-post-btn {
-            background-color: #E966A0;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 1.1em;
-            text-decoration: none;
-            /* Remove underline for links */
-            transition: background-color 0.3s, color 0.3s;
-        }
-
-        .write-post-btn:hover {
-            background-color: #C75185;
-            color: #feffa9;
-        }
-
-        .search-bar {
-            width: 100%;
-            margin-bottom: 20px;
-            display: flex;
-            gap: 10px;
-        }
-
-        .search-bar input[type="text"] {
-            flex-grow: 1;
-            padding: 10px 15px;
-            border-radius: 5px;
-            border: 1px solid #E966A0;
-            background-color: #2B2730;
-            color: #feffa9;
-            font-size: 1em;
-        }
-
-        .search-bar input[type="text"]::placeholder {
-            color: rgba(254, 255, 169, 0.7);
-        }
-
-        .search-bar button {
-            background-color: #E966A0;
-            color: white;
-            border: none;
-            padding: 10px 15px;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 1em;
-            transition: background-color 0.3s, color 0.3s;
-        }
-
-        .search-bar button:hover {
-            background-color: #C75185;
-            color: #feffa9;
-        }
-
-        .post-list {
-            width: 100%;
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-        }
-
-        .post-item {
-            background-color: #2B2730;
-            border-radius: 10px;
-            padding: 15px 20px;
-            display: flex;
-            flex-direction: column;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-            transition: transform 0.2s ease-in-out;
-            cursor: pointer;
-            text-decoration: none; /* Ensure the whole link doesn't have an underline */
-        }
-
-        .post-item:hover {
-            transform: translateY(-3px);
-        }
-
-        .post-item-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 10px;
-        }
-
-        .post-item-title {
-            color: #feffa9;
-            font-size: 1.4em;
-            font-weight: bold;
-            margin: 0;
-        }
-
-        .post-item-title:hover {
-            color: #9575DE;
-            /* Hover color for post title */
-        }
-
-        .post-item-meta {
-            color: rgba(233, 102, 160, 0.7);
-            /* Lighter pink for meta info */
-            font-size: 0.9em;
-            flex-shrink: 0; /* Prevent meta from shrinking too much */
-            margin-left: 15px; /* Space between title and meta */
-            text-align: right;
-        }
-
-        .post-item-content {
-            color: #C75185;
-            font-size: 1em;
-            line-height: 1.5;
-            max-height: 4.5em;
-            /* Limit to 3 lines (1.5em * 3) */
-            overflow: hidden;
-            text-overflow: ellipsis;
-            display: -webkit-box;
-            -webkit-line-clamp: 3;
-            -webkit-box-orient: vertical;
-            margin-bottom: 10px;
-        }
-
-        .post-item-footer {
-            display: flex;
-            justify-content: flex-end;
-            /* Align to the right */
-            gap: 15px;
-            font-size: 0.85em;
-            color: rgba(233, 102, 160, 0.8);
-        }
-
-        .post-item-footer span {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-
-        /* Responsive Layout (모바일) */
+        /* --- Responsive Layout (Mobile) --- */
         @media (max-width: 768px) {
-
-            /* 네비게이션 바는 이전 코드와 동일하게 적용됩니다. */
             .topnav {
                 flex-direction: column;
-                /* 작은 화면에서는 메뉴 항목을 세로로 쌓음 */
                 padding: 10px 0;
-                /* 좌우 패딩 제거, 상하 패딩 유지 */
             }
 
             .topnav>div {
                 flex-direction: column;
-                /* 각 div 내부 링크도 세로로 쌓음 */
                 width: 100%;
-                /* 너비를 100%로 설정 */
                 align-items: stretch;
-                /* 링크들이 전체 너비를 차지하도록 늘림 */
             }
 
-            .topnav a {
+            .topnav a,
+            .topnav .navbar-text,
+            .topnav .logout-button-link {
                 padding: 10px;
-                /* 모바일 환경에서 패딩 조정 */
                 width: 100%;
-                /* 링크 너비를 100%로 설정 */
             }
 
             .topnav>div:first-child a {
                 font-size: 20px;
-                /* 모바일 환경에서 Link 1 크기 조정 */
                 padding: 15px;
             }
 
             .topnav>div:last-child {
                 margin-top: 10px;
-                /* Link 1 그룹과 Link 2,3 그룹 사이에 간격 추가 */
             }
 
-            /* --- Content Area Styles (Mobile) --- */
-            .content {
-                flex-direction: column;
-                /* .content2와 .board를 세로로 쌓음 */
-                align-items: center;
-                /* 가로 중앙 정렬 (전체 너비 사용 시 불필요할 수 있음) */
-                gap: 0;
-                /* 모바일에서는 간격 제거 (원하는 경우 유지 가능) */
-                overflow: auto;
-                /* 모바일에서는 .content 자체에 스크롤 허용 (board만 보일 때 내용이 길어지면) */
-            }
-
-            .content2 {
-                display: none;
-                /* 모바일 화면에서 .content2 전체를 숨깁니다. */
-            }
-
-            .board {
-                width: 90%;
-                /* 모바일에서 .board 너비를 90%로 설정 */
-                height: auto;
-                /* 높이를 콘텐츠에 따라 유동적으로 설정 */
-                flex-grow: 1;
-                /* 남은 공간을 모두 차지하도록 하여 화면을 꽉 채웁니다. */
-                margin-bottom: 20px;
-                /* 푸터와 간격 (선택 사항) */
-            }
-
-            .navbar-text {
-                color: #E966A0;
-                margin-right: 16px;
-                font-size: 16px;
-            }
-
-            /* navbar-text 안에 있는 특정 링크 스타일 재정의 */
-            .navbar-text a {
-                color: #feffa9;
-                /* 사용자 이름의 색상을 다르게 지정 (예: #feffa9) */
-                text-decoration: none;
-                /* 밑줄 제거 */
-                cursor: default;
-                /* 마우스 커서를 기본으로 변경 (링크처럼 보이지 않게) */
-                padding: 0;
-                /* padding 제거 */
-                transition: none;
-                /* 전환 효과 제거 */
-            }
-
-            .navbar-text a:hover {
-                background-color: transparent;
-                /* 호버 시 배경색 변경 없음 */
-                color: #feffa9;
-                /* 호버 시 색상 변경 없음 */
-            }
-
-            #logout-button {
-                width: 100%;
-                /* 전체 너비 차지 */
+            .main-content-wrapper {
+                flex-direction: column; /* Stack sidebar and main content vertically on small screens */
                 padding: 10px;
-                /* 모바일 패딩 조정 */
+                gap: 15px;
             }
 
-            .board-header {
-                flex-direction: column;
-                align-items: flex-start;
-                /* Align title and button to the left */
-                gap: 10px;
+            .sidebar {
+                width: 100%; /* Sidebar takes full width on mobile */
+                order: 2; /* Display sidebar after main content on mobile */
             }
 
-            .board-header h2 {
+            .main-articles-pane {
+                width: 100%; /* Main content takes full width on mobile */
+                order: 1; /* Display main content first on mobile */
+            }
+
+            .blog-container {
+                padding: 20px 25px;
+            }
+
+            .blog-header {
                 font-size: 1.8em;
+                margin-bottom: 20px;
             }
 
-            .write-post-btn {
+            .view-toggle-container {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 15px;
+            }
+
+            .toggle-view-button,
+            .create-article-button {
                 width: 100%;
                 text-align: center;
             }
 
-            .search-bar {
-                flex-direction: column;
+            /* Card View Mobile (default) */
+            .article-item {
+                flex-direction: column; /* Stack vertically on mobile */
+                align-items: center;
+                padding: 15px;
             }
 
-            .search-bar input[type="text"],
-            .search-bar button {
-                width: 100%;
+            .article-img {
+                flex-direction: column; /* Stack image and content vertically on mobile */
+                align-items: center;
+                gap: 15px;
+                margin-bottom: 10px; /* Adjust margin for mobile */
             }
 
-            .post-item-title {
-                font-size: 1.2em;
+            .article-image-preview {
+                max-width: 100%; /* Full width on mobile */
+                height: 150px;
+                margin-bottom: 0; /* Flex gap handles spacing */
             }
 
-            .post-item-content {
-                font-size: 0.95em;
+            .article-cont {
+                padding-left: 0; /* Remove padding on mobile */
+                text-align: center; /* Center text (optional) */
+                gap: 10px;
             }
 
-            .post-item-meta,
-            .post-item-footer {
+            .article-title {
+                font-size: 1.5em;
+            }
+
+            .article-meta {
                 font-size: 0.8em;
+            }
+
+            .article-content-preview {
+                font-size: 1em;
+            }
+
+            .read-more-link {
+                align-self: center; /* Center button */
+                margin-top: 15px;
+            }
+
+
+            /* Grid View Mobile (when .grid-view class is present) */
+            .article-list.grid-view {
+                grid-template-columns: 1fr; /* Single column for mobile grid view */
+                gap: 15px;
+            }
+
+            .article-list.grid-view .article-item {
+                /* Inherits from general article-item mobile styles (flex-direction: column) */
+                padding: 15px;
+            }
+
+            .article-list.grid-view .article-img {
+                /* Centered image for grid view on mobile */
+                flex-direction: column;
+                align-items: center;
+                gap: 10px;
+            }
+
+            .article-list.grid-view .article-image-preview {
+                height: 150px; /* Fixed grid view mobile image height */
+                max-width: 100%;
+            }
+
+            .article-list.grid-view .article-cont {
+                padding-left: 0;
+                text-align: center;
+            }
+
+            .article-list.grid-view .article-title {
+                font-size: 1.2em; /* Adjust grid view mobile title size */
+            }
+
+            /* Hide preview in grid view mobile */
+            .article-list.grid-view .article-content-preview {
+                display: none;
+            }
+
+            .article-list.grid-view .read-more-link {
+                align-self: center;
+                margin-top: 10px;
+            }
+
+            .tag-list {
+                flex-direction: row; /* Tags wrap horizontally within the sidebar on mobile */
+                justify-content: center;
+                gap: 8px;
+            }
+            .tag-item {
+                width: auto; /* Allow tags to size naturally in a row */
+                text-align: center;
             }
         }
     </style>
@@ -696,135 +636,308 @@
         </div>
     </div>
 
-    <div class="content">
-        <div class="content2">
-            <div class="contexts">
-                <h3 class="margin10"><a href="profile.html">My Profile</a></h3>
-                <div id="about-me-card"></div>
-            </div>
-            <div class="contexts">
-                <h3 class="margin10">Popular Posts</h3>
-                <div class="popular-posts-list" style="color: #2B2730; width: 100%; text-align: left; padding-left: 10px;">
-                    <p style="margin-bottom: 5px;">- Post Title 1</p>
-                    <p style="margin-bottom: 5px;">- Post Title 2</p>
-                    <p style="margin-bottom: 5px;">- Post Title 3</p>
-                </div>
-            </div>
+    <div class="main-content-wrapper">
+        <div class="sidebar">
+            <h3>Tags</h3>
+            <ul class="tag-list" id="index-tags-list">
+                <p class="no-tags-message">Loading tags...</p>
+            </ul>
         </div>
-        <div class="board">
-            <div class="board-header">
-                <h2>Bulletin Board</h2>
-                <a href="write_post.html" class="write-post-btn">Write New Post</a>
-            </div>
+        <div class="main-articles-pane">
+            <div class="blog-container">
+                <h1 class="blog-header" id="blog-page-title">Loading Articles...</h1>
 
-            <div class="search-bar">
-                <input type="text" placeholder="Search posts...">
-                <button>Search</button>
-            </div>
+                <div class="view-toggle-container">
+                    <button id="toggle-view-btn" class="toggle-view-button">🖼️</button>
+                    <a href="create_article.html" class="create-article-button" id="create-article-btn"
+                        style="display: none;">Write New Article</a>
+                </div>
 
-            <div class="post-list" id="post-list-container">
-                <p style="text-align: center; color: #feffa9;">Loading posts...</p>
+                <ul class="article-list" id="blog-articles-list">
+                    <p class="no-articles-message">Loading blog articles...</p>
+                </ul>
+            </div>
+            <div id="pagination-controls" style="margin-top: 20px; display: flex; justify-content: center; gap: 10px;">
             </div>
         </div>
     </div>
 
     <div class="footer">
-        &copy; 2025 Genie's WebPage. All rights reserved.
+        <p>&copy; 2025 Genie's Blog. All rights reserved.</p>
     </div>
 
     <script src="/js/auth.js"></script>
     <script>
-        const aboutMeCard = document.getElementById('about-me-card');
-        const postListContainer = document.getElementById('post-list-container');
+        const paginationControls = document.getElementById('pagination-controls');
+        const blogPageTitle = document.getElementById('blog-page-title');
+        const blogArticlesList = document.getElementById('blog-articles-list');
+        const createArticleBtn = document.getElementById('create-article-btn');
+        const toggleViewBtn = document.getElementById('toggle-view-btn');
+        const indexTagsList = document.getElementById('index-tags-list');
 
-        // Function to render the "About Me" profile card
-        function renderAboutMe(user) {
-            if (!user) {
-                aboutMeCard.style.display = 'none';
+        let currentPage = 1; // Global variable for current page
+        const postsPerPage = 4; // Define how many posts per page
+        let currentOwnerId = null; // To store the ID of the blog owner being viewed
+        let currentFilterTag = null; // To store the current tag filter
+
+        let isGridView = false; // Tracks current view state (false for card view, true for grid view)
+
+        // Function to update button text and list class
+        function updateView() {
+            if (isGridView) {
+                blogArticlesList.classList.add('grid-view');
+                toggleViewBtn.textContent = '📃'; // Change to card view icon
+            } else {
+                blogArticlesList.classList.remove('grid-view');
+                toggleViewBtn.textContent = '🖼️'; // Change to grid view icon
+            }
+        }
+
+        // Button click event listener for toggling view
+        toggleViewBtn.addEventListener('click', () => {
+            isGridView = !isGridView; // Toggle view state
+            updateView(); // Update view
+        });
+
+        function renderPaginationControls(totalPosts, currentPageFromAPI, postsPerPage) {
+            currentPage = currentPageFromAPI; // Synchronize global currentPage with API response
+
+            paginationControls.innerHTML = '';
+
+            const totalPages = Math.ceil(totalPosts / postsPerPage);
+            console.log(`프론트엔드: totalPosts=${totalPosts}, postsPerPage=${postsPerPage}, 계산된 totalPages=${totalPages}`); // 이 로그를 추가하여 확인!
+
+            if (totalPages <= 1) {
                 return;
             }
 
-            aboutMeCard.innerHTML = `
-                <div class="profile-card">
-                    <div>
-                        <img src="/static/profiles/${user.profile_image_filename}" class="profile-image" alt="No Image">
-                    </div>
-                    <div class="profile-content">
-                        <div class="profile-header">
-                            <h4><b><a href="profile.html" class="aaa">${user.username}</a></b></h4>
-                            <a href="edit_profile.html" class="edit-link">Edit</a>
-                        </div>
-                        <p class="profile-bio">${user.bio || 'Your bio goes here.'}</p>
-                    </div>
-                </div>
-            `;
-        }
-
-        // Function to render posts fetched from the database
-        function renderPosts(posts) {
-            postListContainer.innerHTML = ''; // Clear existing "Loading posts..." text
-
-            if (posts.length === 0) {
-                postListContainer.innerHTML = '<p style="text-align: center; color: #feffa9;">No posts found yet.</p>';
-                return;
-            }
-
-            posts.forEach(post => {
-                const postItem = document.createElement('a');
-                postItem.href = `post_detail.html?id=${post.id}`; // Assuming 'id' field for detail page
-                postItem.className = 'post-item';
-
-                // Format the creation date
-                const createdAt = new Date(post.created_at);
-                const formattedDate = createdAt.toLocaleDateString('en-US', {
-                    year: 'numeric',
-                    month: 'short',
-                    day: 'numeric'
-                });
-
-                // You might need to fetch owner's username based on owner_id in a real app,
-                // or have your backend send the username directly.
-                // For now, using owner_id as owner name.
-                const ownerName = post.owner_id; // Or post.owner_username if your API provides it
-
-                postItem.innerHTML = `
-                    <div class="post-item-header">
-                        <h3 class="post-item-title">${post.title}</h3>
-                        <span class="post-item-meta">by ${ownerName} | ${formattedDate}</span>
-                    </div>
-                    <p class="post-item-content">${post.content}</p>
-                    <div class="post-item-footer">
-                        <span>❤️ 0 Likes</span> <span>💬 0 Comments</span> </div>
-                `;
-                postListContainer.appendChild(postItem);
-            });
-        }
-
-        // Function to fetch posts from your backend API
-        async function fetchPosts() {
-            try {
-                // Replace '/api/posts' with your actual backend endpoint for fetching posts
-                const response = await fetch('/api/posts');
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
+            // 'PREVIOUS' button
+            const prevButton = document.createElement('button');
+            prevButton.textContent = 'PREVIOUS';
+            prevButton.disabled = currentPage === 1;
+            prevButton.className = 'pagination-button';
+            prevButton.onclick = () => {
+                if (currentPage > 1) {
+                    currentPage--;
+                    fetchPosts(currentOwnerId, currentFilterTag); // Call fetchPosts with updated page
                 }
-                const posts = await response.json();
-                renderPosts(posts);
+            };
+            paginationControls.appendChild(prevButton);
+
+            // Page number buttons (max 5 pages centered around current page)
+            let startPage = Math.max(1, currentPage - 2);
+            let endPage = Math.min(totalPages, currentPage + 2);
+
+            if (totalPages < 5) {
+                startPage = 1;
+                endPage = totalPages;
+            } else {
+                if (currentPage <= 2) {
+                    endPage = 5;
+                    startPage = 1;
+                } else if (currentPage >= totalPages - 1) {
+                    startPage = totalPages - 4;
+                    endPage = totalPages;
+                }
+            }
+
+            for (let i = startPage; i <= endPage; i++) {
+                const pageButton = document.createElement('button');
+                pageButton.textContent = i;
+                pageButton.className = 'pagination-button';
+                if (i === currentPage) {
+                    pageButton.classList.add('active'); // Add active class to current page
+                }
+                pageButton.onclick = () => {
+                    currentPage = i;
+                    fetchPosts(currentOwnerId, currentFilterTag); // Call fetchPosts with updated page
+                };
+                paginationControls.appendChild(pageButton);
+            }
+
+            // 'NEXT' button
+            const nextButton = document.createElement('button');
+            nextButton.textContent = 'NEXT';
+            nextButton.disabled = currentPage === totalPages;
+            nextButton.className = 'pagination-button';
+            nextButton.onclick = () => {
+                if (currentPage < totalPages) {
+                    currentPage++;
+                    fetchPosts(currentOwnerId, currentFilterTag); // Call fetchPosts with updated page
+                }
+            };
+            paginationControls.appendChild(nextButton);
+        }
+
+        // Function to load and display tags
+        async function loadTags(userId) {
+    indexTagsList.innerHTML = `<p class="no-tags-message">Loading tags...</p>`;
+    try {
+        const tagsResponse = await fetch(`/api/blog/tags?owner_id=${userId}`);
+
+        if (tagsResponse.ok) {
+            const responseData = await tagsResponse.json();
+
+            if (Array.isArray(responseData) && responseData.every(item => typeof item === 'string')) {
+                const uniqueTags = responseData;
+
+                if (uniqueTags.length > 0) {
+                    indexTagsList.innerHTML = '';
+                    uniqueTags.forEach(tagName => {
+                        const tagItem = document.createElement('li');
+                        tagItem.classList.add('tag-item');
+                        tagItem.innerHTML = `
+                            <a href="index.html?owner_id=${userId}&tag=${encodeURIComponent(tagName)}"
+                            style="text-decoration: none; color: inherit;">
+                            # ${tagName}
+                            </a>
+                        `;
+                        indexTagsList.appendChild(tagItem);
+                    });
+                } else {
+                    indexTagsList.innerHTML = `<p class="no-tags-message style="text-align:center;">No tags found.</p>`;
+                }
+            } else {
+                indexTagsList.innerHTML = `<p class="no-tags-message" style="color: red;">Error: Unexpected tag data format from server.</p>`;
+                console.error('Unexpected tag data format:', responseData);
+            }
+        } else {
+            const errorData = await tagsResponse.json();
+            indexTagsList.innerHTML = `<p class="no-tags-message" style="color: red;">Error loading tags: ${errorData.detail || 'Failed to retrieve blog tags.'}</p>`;
+        }
+    } catch (error) {
+        indexTagsList.innerHTML = `<p class="no-tags-message" style="color: red;">Network error loading tags: ${error.message}</p>`;
+    }
+}
+
+        // Function to fetch and render articles (modified to support pagination and tag filtering)
+        async function fetchPosts(ownerId, tag = null) {
+            blogArticlesList.innerHTML = `<p class="no-articles-message">Loading blog articles...</p>`;
+            toggleViewBtn.style.display = 'none'; // Hide button while loading
+
+            try {
+                let fetchUrl = `/api/blog/articles?owner_id=${ownerId}&page=${currentPage}&limit=${postsPerPage}`;
+                if (tag) {
+                    fetchUrl += `&tag=${encodeURIComponent(tag)}`;
+                }
+
+                const articlesResponse = await fetch(fetchUrl);
+
+                if (articlesResponse.ok) {
+                    const responseData = await articlesResponse.json();
+                    const articles = responseData.items;
+                    const totalPosts = responseData.total;
+                    const currentPageFromAPI = responseData.page;
+
+                    if (articles && articles.length > 0) {
+                        blogArticlesList.innerHTML = ''; // Clear "Loading..." message
+                        articles.forEach(article => {
+                            const articleItem = document.createElement('li');
+                            articleItem.classList.add('article-item');
+
+                            const contentPreview = article.content ?
+                                article.content.split('\n').slice(0, 3).join('\n') + (article.content.split('\n').length > 3 ? '...' : '') :
+                                '';
+
+                            articleItem.innerHTML = `
+                                <a href="article_detail.html?id=${article.id}" class="article-title">${article.title}</a>
+                                <div class="article-img">
+                                    <div class="article-cont">
+                                        <p class="article-meta">on ${new Date(article.create_at).toLocaleDateString()}
+                                            <span class="article-views"> | Views: ${article.views || 0}</span></p>
+                                        <p class="article-content-preview">${contentPreview}</p>
+                                    </div>
+                                    ${article.image_url ? `<img src="${article.image_url}" alt="Article Image" class="article-image-preview">` : ''}
+                                </div>
+                                <div class="read">
+                                    <a href="article_detail.html?id=${article.id}" class="read-more-link">Read More</a>
+                                </div>
+                            `;
+                            blogArticlesList.appendChild(articleItem);
+                        });
+                        updateView(); // Set initial view after articles load
+                        toggleViewBtn.style.display = 'inline-block'; // Show button if articles exist
+                        renderPaginationControls(totalPosts, currentPageFromAPI, postsPerPage);
+                    } else {
+                        blogArticlesList.innerHTML = `<p class="no-articles-message">No articles found for this user.</p>`;
+                        toggleViewBtn.style.display = 'none'; // Hide button if no articles
+                        paginationControls.innerHTML = ''; // Clear pagination if no articles
+                    }
+                } else {
+                    const errorData = await articlesResponse.json();
+                    blogArticlesList.innerHTML = `<p class="no-articles-message" style="color: red;">Error loading articles: ${errorData.detail || 'Failed to fetch blog articles.'}</p>`;
+                    toggleViewBtn.style.display = 'none'; // Hide button on error
+                    paginationControls.innerHTML = ''; // Clear pagination on error
+                }
             } catch (error) {
-                console.error('Error fetching posts:', error);
-                postListContainer.innerHTML = '<p style="text-align: center; color: #E966A0;">Failed to load posts. Please try again later.</p>';
+                blogArticlesList.innerHTML = `<p class="no-articles-message" style="color: red;">Network error loading articles: ${error.message}</p>`;
+                toggleViewBtn.style.display = 'none'; // Hide button on network error
+                paginationControls.innerHTML = ''; // Clear pagination on network error
             }
         }
 
-        // Event listener for when the DOM is fully loaded
+
         document.addEventListener('DOMContentLoaded', async () => {
-            const user = await getCurrentUser();
-            renderNavbar(user); // auth.js function
-            renderAboutMe(user); // Render profile card based on user session
-            fetchPosts(); // Fetch and render posts from the database
+            renderNavbar();
+
+            const currentUser = await getCurrentUser();
+            const urlParams = new URLSearchParams(window.location.search);
+            const ownerId = urlParams.get('owner_id');
+            const filterTag = urlParams.get('tag');
+
+            let targetUser = currentUser;
+
+            if (ownerId && (!currentUser || currentUser.id !== ownerId)) {
+                try {
+                    const userResponse = await fetch(`/api/users/${ownerId}`);
+                    if (userResponse.ok) {
+                        targetUser = await userResponse.json();
+                        createArticleBtn.style.display = 'none';
+                    } else {
+                        console.error('Failed to fetch target user details.');
+                        targetUser = null;
+                    }
+                } catch (error) {
+                    console.error('Network error fetching target user:', error);
+                    targetUser = null;
+                }
+            }
+
+            if (targetUser) {
+                currentOwnerId = targetUser.id; // Store the target user's ID
+                currentFilterTag = filterTag; // Store the filter tag
+
+                blogPageTitle.textContent = `${targetUser.username || targetUser.full_name || 'User'}'s Blog`;
+                if (filterTag) {
+                    blogPageTitle.textContent += ` (Tag: ${filterTag})`;
+                }
+
+                if (currentUser && currentUser.id === targetUser.id) {
+                    createArticleBtn.style.display = 'inline-block';
+                    createArticleBtn.href = `/create_article.html`;
+                } else {
+                    createArticleBtn.style.display = 'none';
+                }
+
+                // Initial fetch of articles and tags
+                await fetchPosts(currentOwnerId, currentFilterTag);
+                await loadTags(currentOwnerId);
+
+            } else {
+                blogPageTitle.textContent = "Login Required";
+                blogArticlesList.innerHTML = `
+                    <p class="no-articles-message" style="color: red;">Please log in to view your personal blog.</p>
+                    <div class="create-article-button-container">
+                        <a href="login.html" class="create-article-button">Log In</a>
+                    </div>
+                `;
+                createArticleBtn.style.display = 'none';
+                toggleViewBtn.style.display = 'none';
+                indexTagsList.innerHTML = `<p class="no-tags-message">Please log in to see tags.</p>`;
+                paginationControls.innerHTML = ''; // Clear pagination if login is required
+            }
         });
     </script>
-
 
 </body>
 
