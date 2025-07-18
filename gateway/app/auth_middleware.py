@@ -17,7 +17,7 @@ class AuthMiddleware(BaseHTTPMiddleware):
             return await call_next(request)
 
         session_id = request.cookies.get("session_id")
-        print(f"Request received: {request.method} {request.url.path}")
+        # print(f"Request received: {request.method} {request.url.path}")
         if not session_id:
             return JSONResponse(status_code=401, content={"detail": "Not authenticated"})
         try:

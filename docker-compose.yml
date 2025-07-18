@@ -126,6 +126,7 @@ services:
     environment:
     - DATABASE_URL=mysql+asyncmy://${DB_USER}:${DB_PASSWORD}@board_db:3306/board_db
     - USER_SERVICE_URL=http://user_service:8001
+    - REDIS_URL=${REDIS_URL}
 
     depends_on:
       board_db:
@@ -157,10 +158,35 @@ services:
     networks:
       - webnet
 
-  redis_db:
-    image: redis:alpine
+  board_worker:
+    build: ./services/board_service
+    volumes:
+      - ./services/board_service/app:/app
+    environment:
+      - PYTHONUNBUFFERED=1
+      - DATABASE_URL=mysql+asyncmy://${DB_USER}:${DB_PASSWORD}@board_db:3306/board_db
+      - REDIS_URL=${REDIS_URL}
+    command: ["python", "worker.py"]
+    depends_on:
+      board_db:
+        condition: service_healthy
+      redis_db:
+        condition: service_healthy
     networks:
       - webnet
+
+
+
+  redis_db:
+    image: redis:alpine
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - webnet
+      
 
 networks:
   webnet:

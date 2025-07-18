@@ -37,7 +37,7 @@ async def reverse_proxy(request:Request):
         raise HTTPException(status_code=404, detail="Endpoint not found")
     
     url = f"{base_url}{path}?{request.url.query}"
-
+    print(url)
     try:
         rp_resp = await client.request(
             method=request.method,

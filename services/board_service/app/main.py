@@ -2,6 +2,9 @@ import os
 import math
 import asyncio
 import uuid
+import redis.asyncio as redis
+import time
+
 from typing import Annotated, List, Set, Optional
 from fastapi import FastAPI, Depends, HTTPException, Header, Query, status, UploadFile, File
 from fastapi.staticfiles import StaticFiles
@@ -13,6 +16,7 @@ import httpx
 
 from models import Post, PostCreate, PostUpdate, PostImage, PaginatedResponse
 from database import init_db, get_session
+from redis_client import get_redis
 
 app = FastAPI(title="Board Service")
 USER_SERVICE_URL = os.getenv("USER_SERVICE_URL")
@@ -73,16 +77,25 @@ async def upload_post_images(
 # 게시물 리스트 만들기
 
 @app.get("/api/board/posts/{post_id}")
-async def get_article(post_id: int, session: Annotated[AsyncSession, Depends(get_session)]):
+async def get_article(post_id: int, session: Annotated[AsyncSession, Depends(get_session)], redis: Annotated[redis.Redis, Depends(get_redis)]):
     #게시글 정보 가져오기
     post = await session.get(Post, post_id)
     if not post:
         raise HTTPException(status_code=404, detail="Post not found")
-    # 조회수 증가 로직 추가!
-    post.views += 1 # 조회수 1 증가
-    session.add(post) # 변경 사항을 세션에 추가
-    await session.commit() # 데이터베이스에 커밋
-    await session.refresh(post) # 업데이트된 데이터로 post 객체 새로고침
+    
+    # Redis에서 해당 게시물의 조회수를 1 증가시킵니다.
+    redis_key = f"views:post:{post_id}"
+    view_count = await redis.incr(redis_key)
+    
+    # ▼▼▼ 동기화 작업 등록 로직 추가 ▼▼▼
+    # 'view_sync_queue'라는 작업 큐에 post_id를 현재 시간 점수와 함께 추가합니다.
+    await redis.zadd("view_sync_queue", {str(post_id): time.time()})
+    
+    # # 조회수 증가 로직 추가!
+    # post.views += 1 # 조회수 1 증가
+    # session.add(post) # 변경 사항을 세션에 추가
+    # await session.commit() # 데이터베이스에 커밋
+    # await session.refresh(post) # 업데이트된 데이터로 post 객체 새로고침
 
     author_info = {}
     try:
@@ -101,7 +114,7 @@ async def get_article(post_id: int, session: Annotated[AsyncSession, Depends(get
     #가져온 파일명으로 전체 이미지 url 목록 생성 
     image_urls = [f"/static/images/{filename}" for filename in image_filenames]
 
-    return {"post": post, "author": author_info, "image_urls": image_urls}
+    return {"post": post, "author": author_info, "image_urls": image_urls, "views": view_count}
 
 @app.get("/api/board/posts", response_model=PaginatedResponse)
 async def list_posts(
@@ -204,6 +217,7 @@ async def delete_post(
     post_id: int,
     session: Annotated[AsyncSession, Depends(get_session)],
     x_user_id: Annotated[int, Header(alias="X-User-Id")],
+    redis: Annotated[redis.Redis, Depends(get_redis)]
 ):
     db_post = await session.get(Post, post_id)
     if not db_post:
@@ -220,6 +234,9 @@ async def delete_post(
         await session.delete(image)
 
     await session.delete(db_post)
+
+    view_count_key = f"views:post:{post_id}"
+    await redis.delete(view_count_key)
     await session.commit()
     return
 
